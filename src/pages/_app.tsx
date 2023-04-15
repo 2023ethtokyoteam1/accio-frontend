@@ -13,12 +13,7 @@ import {
   RainbowKitProvider,
   RainbowKitAuthenticationProvider,
 } from "@rainbow-me/rainbowkit";
-import {
-  coinbaseWallet,
-  metaMaskWallet,
-  trustWallet,
-  walletConnectWallet,
-} from "@rainbow-me/rainbowkit/wallets";
+import { coinbaseWallet, metaMaskWallet, trustWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
 import { createClient, configureChains, WagmiConfig } from "wagmi";
 import {
   mainnet,
@@ -35,26 +30,12 @@ import {
   localhost,
 } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
-import { alchemyProvider } from "wagmi/providers/alchemy";
 import { lineaGoerliTestnet } from "@/config/chains";
 import { balanceContext } from "../hooks/balanceContext";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [
-    mainnet,
-    goerli,
-    arbitrum,
-    avalanche,
-    celo,
-    filecoin,
-    gnosis,
-    optimism,
-    optimismGoerli,
-    polygon,
-    polygonMumbai,
-    localhost,
-    lineaGoerliTestnet,
-  ],
+  [goerli, polygonMumbai, optimismGoerli, lineaGoerliTestnet],
   [publicProvider()]
 );
 
@@ -82,6 +63,8 @@ const progress = new ProgressBar({
   delay: 100,
 });
 
+const queryClient = new QueryClient();
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [balances, setBalances] = useState<Record<string, number>>({});
@@ -102,18 +85,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <WagmiConfig client={client}>
-        <RainbowKitProvider
-          chains={chains}
-          theme={lightTheme({ borderRadius: "small" })}
-          appInfo={appInfo}
-        >
-          <balanceContext.Provider
-            value={{ balances, setBalances, totalBalance, setTotalBalance }}
-          >
-            <Layout>
-              {/* <CssBaseline /> */}
-              <Component {...pageProps} />
-            </Layout>
+        <RainbowKitProvider chains={chains} theme={lightTheme({ borderRadius: "small" })} appInfo={appInfo}>
+          <balanceContext.Provider value={{ balances, setBalances, totalBalance, setTotalBalance }}>
+            <QueryClientProvider client={queryClient}>
+              <Layout>
+                {/* <CssBaseline /> */}
+                <Component {...pageProps} />
+              </Layout>
+            </QueryClientProvider>
           </balanceContext.Provider>
         </RainbowKitProvider>
       </WagmiConfig>

@@ -1,0 +1,102 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ILiquidityAggregator",
+  "sourceName": "contracts/interfaces/ILiquidityAggregator.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "nftContract",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nftId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ILiquidityAggregator.NftInfo",
+          "name": "nftInfo",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "chainId",
+              "type": "uint32"
+            },
+            {
+              "internalType": "address",
+              "name": "localWeth",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "localWethAmount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ILiquidityAggregator.Fund[]",
+          "name": "funds",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "buy",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "chainId",
+          "type": "uint32"
+        },
+        {
+          "internalType": "address",
+          "name": "localWeth",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "localWethAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "userAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "requestId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fundIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

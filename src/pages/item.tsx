@@ -5,25 +5,7 @@ import { Grid, Typography, Modal, Button, Container } from "@mui/material";
 import TitleManager from "@/components/common/TitleManager";
 import axios from "axios";
 import { ethers, providers } from "ethers";
-import {
-  ERC20,
-  MockWethToken,
-  MockWethToken__factory,
-  MockInterchainAccountRouter,
-  MockInterchainAccountRouter__factory,
-  LiquidityAggregator,
-  LiquidityAggregator__factory,
-  MockLiquidityLayerRouter,
-  MockLiquidityLayerRouter__factory,
-  SeaportInterface__factory,
-  ERC20__factory,
-  ERC721__factory,
-  ERC1155__factory,
-  MockInterchainGasPaymaster,
-  MockInterchainGasPaymaster__factory,
-  IWETH9__factory,
-  IWETH9,
-} from "../typechain";
+import { ERC20, ERC20__factory } from "../typechain";
 import { Address, useProvider, useSigner } from "wagmi";
 import { useNetwork, useSwitchNetwork } from "wagmi";
 import PurchaseStepGuide from "@/components/nftCollections/PurchaseStepGuide";
@@ -32,6 +14,14 @@ import { openseaData } from "@/config/types";
 import ScatterChart from "../components/common/ScatterChart";
 import { DateTime } from "luxon";
 import Tooltip from "@mui/material/Tooltip";
+import { lineaGoerliTestnet } from "@/config/chains";
+import { deployedContracts } from "@/config/deployed_contracts";
+import LiquidityAggregator from "../abis/ILiquidityAggregator.json";
+import LinkedSliders from "../components/LinkedSliders";
+import SimpleModal from "../components/SimpleModal";
+import { useEvmEvent } from "@/hooks/useEvmEvent";
+import { goerli, polygonMumbai } from "wagmi/chains";
+// import TransitionLoading from "../components/common/TransitionLoading";
 
 interface Item {
   id: number;
@@ -44,20 +34,6 @@ interface ItemProps {
   crypto: Crypto;
   onBalanceUpdate: (name: string, balance: number, selected: boolean) => void;
 }
-
-const useLAContract = (address: Address) => {
-  const [contract, setContract] = useState<LiquidityAggregator>();
-  const provider = useProvider();
-
-  useEffect(() => {
-    if (address && provider) {
-      const contractInstance = LiquidityAggregator__factory.connect(address, provider);
-      setContract(contractInstance);
-    }
-  }, [address, provider]);
-
-  return contract;
-};
 
 const useTokenContract = (address: Address) => {
   const [contract, setContract] = useState<ERC20>();
@@ -85,33 +61,68 @@ const ItemPage: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalChainId, setModalChainId] = useState<number>(0);
+  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] = useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
   // TODO : Hardcoded linea address
-  const wETHContractPoly = useTokenContract("0xa4a20E5ce59C7672A6fbb254934477D58F3dD716");
-  const wETHContractLinea = useTokenContract("0x5e5b4ac1991818bDdAE5913D7193595914567f9a");
-  const LAContract = useLAContract("0x9f8bFAbbeEe0492019698E61E894Fec46E030a83");
-  const { chain } = useNetwork();
-  const { isLoading: chainSwitchIsLoadingLinea, switchNetwork: switchNetworkToLinea } = useSwitchNetwork({
-    chainId: 59140,
-    onSuccess(data: any) {
-      console.log("Success", data);
-      handleSwitchNetworkSuccessLinea(data);
-    },
+  const wETHContractMumbai = useTokenContract(deployedContracts.mumbai.weth);
+  const wETHContractLinea = useTokenContract(deployedContracts.linea.weth);
+  const provider = useProvider();
+  // const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/")
+
+  // Linea LiquidityAggregator#buy BuyMessageDispatched
+  // Mumbai LiquidityAggregator#handle DispatchWithTokensMessageDispatched
+  // Linea LiquidityAggregator#handleWithTokens FundFulfilled
+  // Linea NFTMarket#buyNFT NFTSold
+  const {
+    data: laBuyEventList,
+    refetch,
+    error,
+  } = useEvmEvent({
+    chainId: lineaGoerliTestnet.id,
+    contractAddress: deployedContracts.linea.liquidity_aggregator,
+    abi: LiquidityAggregator.abi,
+    eventName: "BuyMessageDispatched",
   });
 
-  const { isLoading: chainSwitchIsLoadingMumbai, switchNetwork: switchNetworkToMumbai } = useSwitchNetwork({
-    chainId: 80001,
-    onSuccess(data: any) {
-      console.log("Success", data);
-      handleSwitchNetworkSuccessMumbai(data);
-    },
+  useEffect(() => {
+    if (laBuyEventList) {
+      console.log("laBuyEventList", laBuyEventList);
+    }
+  }, [laBuyEventList]);
+
+  const { chain } = useNetwork();
+  const { isLoading: chainSwitchIsLoadingLinea, switchNetworkAsync: switchNetworkToLinea } = useSwitchNetwork({
+    chainId: lineaGoerliTestnet.id,
+  });
+
+  const { isLoading: chainSwitchIsLoadingMumbai, switchNetworkAsync: switchNetworkToMumbai } = useSwitchNetwork({
+    chainId: polygonMumbai.id,
   });
 
   const [txHistory, setTxHistory] = useState<latestTx[] | null>();
   const [osData, setOsData] = useState<openseaData | null>();
 
-  const handleBuyButtonClick = () => {
-    alert("You have purchased this item!");
+  const handleBuyButtonClick = async () => {
+    const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: 0 };
+
+    const funds = [
+      { chainId: lineaGoerliTestnet.id, localWeth: deployedContracts.linea.weth, localWethAmount: 500_000_000_000 },
+      { chainId: polygonMumbai.id, localWeth: deployedContracts.mumbai.hyp_weth, localWethAmount: 500_000_000_000 },
+    ];
+    if (signer && provider) {
+      const LAContract = new ethers.Contract(
+        (deployedContracts as any).linea.liquidity_aggregator,
+        LiquidityAggregator.abi,
+        provider
+      );
+
+      try {
+        await LAContract.connect(signer).buy(nftInfo, funds);
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   const handleCardClick = (item: Item) => {
@@ -124,54 +135,51 @@ const ItemPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleSwitchNetworkSuccessLinea = async (data: any) => {
-    if (wETHContractLinea && !isError && !isLoading && signer && chain) {
-      try {
-        // TODO : switch network to mainnet
-        await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
-      } catch (e) {
-        console.log("error");
+  const handleNetworkChangeButtonClick = async () => {
+    try {
+      if (modalChainId === polygonMumbai.id && switchNetworkToMumbai) {
+        await switchNetworkToMumbai();
+      } else if (modalChainId === lineaGoerliTestnet.id && switchNetworkToLinea) {
+        await switchNetworkToLinea();
       }
+    } catch (e) {
+      console.log(e);
     }
+
+    setModalChainId(0);
+    setIsNetworkChangeModalOpen(false);
   };
 
-  const handleSwitchNetworkSuccessMumbai = async (data: any) => {
-    if (wETHContractPoly && !isError && !isLoading && signer && chain) {
-      try {
-        // TODO : switch network to mainnet
-        await wETHContractPoly.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
-      } catch (e) {
-        console.log("error");
-      }
-    }
+  const handleNetworkChangeModalClose = () => {
+    setModalChainId(0);
+    setIsNetworkChangeModalOpen(false);
   };
 
   const handleApproveButtonClickMumbai = async () => {
-    if (wETHContractPoly && !isError && !isLoading && signer && chain) {
+    if (wETHContractMumbai && !isError && !isLoading && signer && chain) {
       try {
-        // TODO : switch network to mainnet
         console.log(chain.id);
-        if (chain.id !== 80001 && switchNetworkToMumbai) {
-          await switchNetworkToMumbai();
+        if (chain.id !== polygonMumbai.id && switchNetworkToMumbai) {
+          setModalChainId(polygonMumbai.id);
+          setIsNetworkChangeModalOpen(true);
+        } else {
+          await wETHContractMumbai.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
       } catch (e) {
-        console.log("error");
+        console.log(e);
       }
     }
   };
 
   const handleApproveButtonClickLinea = async () => {
-    // alert("You have approved this item!");
     if (wETHContractLinea && !isError && !isLoading && signer && chain) {
       try {
-        // TODO : switch network to mainnet
-        console.log(chain.id);
-        console.log("linea");
-        if (chain.id !== 59140 && switchNetworkToLinea) {
-          await switchNetworkToLinea();
+        if (chain.id !== lineaGoerliTestnet.id && switchNetworkToLinea) {
+          setModalChainId(lineaGoerliTestnet.id);
+          setIsNetworkChangeModalOpen(true);
+        } else {
+          await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
-
-        await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
       } catch (e) {
         console.log("error");
       }
@@ -258,6 +266,20 @@ const ItemPage: React.FC = () => {
     fetchAirStackTx();
     fetchOsData();
   }, []);
+
+  const maxValue = 100;
+  const [sliderValue1, setSliderValue1] = useState(maxValue / 2);
+  const [sliderValue2, setSliderValue2] = useState(maxValue / 2);
+
+  const handleSlider1Change = (value: number) => {
+    setSliderValue1(value);
+    setSliderValue2(maxValue - value);
+  };
+
+  const handleSlider2Change = (value: number) => {
+    setSliderValue1(maxValue - value);
+    setSliderValue2(value);
+  };
 
   console.log("osData", osData);
   // console.log("txHistory", txHistory);
@@ -411,67 +433,109 @@ const ItemPage: React.FC = () => {
                             flexDirection: "column",
                             flexGrow: 1,
                             paddingLeft: 20,
+                            paddingRight: 20,
                           }}
                         >
-                          <Typography variant="h5" className="font-medium mb-1">
-                            {selectedItem.name}
-                          </Typography>
-                          <Typography variant="h6" className="mb-4">
-                            {selectedItem.price.toFixed(2)} ETH
-                          </Typography>
-
                           <Grid container direction="row" alignItems="center">
                             <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleApproveButtonClickMumbai}
-                                style={{
-                                  backgroundColor: "#1e90ff",
-                                  alignSelf: "center",
-                                  fontSize: "1rem",
-                                  padding: "0.4rem 1rem",
-                                }}
-                              >
-                                Approve on Polygon
-                              </Button>
+                              <Typography variant="h5" className="font-medium mb-1">
+                                {selectedItem.name}
+                              </Typography>
                             </Grid>
                             <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleApproveButtonClickLinea}
-                                style={{
-                                  backgroundColor: "#1e90ff",
-                                  alignSelf: "center",
-                                  fontSize: "1rem",
-                                  padding: "0.4rem 1rem",
-                                }}
-                              >
-                                Approve on Linea
-                              </Button>
+                              <Typography variant="h5" className="font-medium mb-1">
+                                {selectedItem.price.toFixed(2)} wETH
+                              </Typography>
                             </Grid>
+                            {/* <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                              <div>
+                                <LinkedSliders
+                                  maxValue={maxValue}
+                                  sliderValue1={sliderValue1}
+                                  sliderValue2={sliderValue2}
+                                  onSlider1Change={handleSlider1Change}
+                                  onSlider2Change={handleSlider2Change}
+                                />
+                                <Typography variant="h5" className="font-medium mb-1">
+                                  {sliderValue1} wETH from Mumbai
+                                </Typography>
+                                <Typography variant="h5" className="font-medium mb-1">
+                                  {sliderValue2} wETH from Linea
+                                </Typography>
+                              </div>
+                            </Grid> */}
                           </Grid>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleBuyButtonClick}
+
+                          <div
                             style={{
-                              backgroundColor: "#1e90ff",
-                              alignSelf: "center",
-                              fontSize: "1rem",
-                              padding: "0.4rem 1rem",
-                              marginTop: "1.5rem",
+                              display: "flex",
+                              flexDirection: "column",
+                              flexGrow: 1,
+                              paddingLeft: 80,
+                              paddingRight: 80,
                             }}
                           >
-                            Buy Now
-                          </Button>
+                            <Grid container direction="row" alignItems="center">
+                              <Grid item xs={6} className="flex justify-center">
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={handleApproveButtonClickMumbai}
+                                  style={{
+                                    backgroundColor: "#1e90ff",
+                                    alignSelf: "center",
+                                    fontSize: "1rem",
+                                    padding: "0.4rem 1rem",
+                                  }}
+                                >
+                                  Approve on Mumbai
+                                </Button>
+                              </Grid>
+                              <Grid item xs={6} className="flex justify-center">
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={handleApproveButtonClickLinea}
+                                  style={{
+                                    backgroundColor: "#1e90ff",
+                                    alignSelf: "center",
+                                    fontSize: "1rem",
+                                    padding: "0.4rem 1rem",
+                                  }}
+                                >
+                                  Approve on Linea
+                                </Button>
+                              </Grid>
+                              <Grid item xs={12} className="flex justify-center">
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={handleBuyButtonClick}
+                                  style={{
+                                    backgroundColor: "#1e90ff",
+                                    alignSelf: "center",
+                                    fontSize: "1rem",
+                                    padding: "0.4rem 1rem",
+                                    marginTop: "1rem",
+                                  }}
+                                >
+                                  Buy Now
+                                </Button>
+                              </Grid>
+                            </Grid>
+                          </div>
                         </div>
                       </>
                     )}
                     <PurchaseStepGuide />
                   </div>
                 </Modal>
+                <SimpleModal
+                  isOpen={isNetworkChangeModalOpen}
+                  onButtonClick={handleNetworkChangeButtonClick}
+                  chainId={modalChainId}
+                  onClose={handleNetworkChangeModalClose}
+                />
               </Grid>
             </>
           ) : null}

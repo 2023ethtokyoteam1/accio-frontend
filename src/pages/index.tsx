@@ -16,23 +16,23 @@ export default function Home() {
 
   const cryptoList: Crypto[] = [
     // mainnet
-    {
-      name: "Ethereum",
-      fileName: "eth",
-      symbol: "ETH",
-      chainId: 1,
-      usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    },
-    // goerli
     // {
     //   name: "Ethereum",
     //   fileName: "eth",
     //   symbol: "ETH",
-    //   chainId: 5,
-    //   usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    //   chainId: 1,
+    //   usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     //   wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     // },
+    // goerli
+    {
+      name: "Ethereum",
+      fileName: "eth",
+      symbol: "ETH",
+      chainId: 5,
+      usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    },
     {
       name: "Polygon",
       fileName: "matic",
@@ -111,30 +111,6 @@ export default function Home() {
     //   })
     //   .then(console.log);
   };
-
-  // const handleSwapUSDCTowETH = (crypto: Crypto) => {
-  //   const blockchainProvider = new PrivateKeyProviderConnector(
-  //     "0x1e7fb82322ba55ea8b81c1dabefd8679c81595280f2e10ae7e0f41df85d1cb36",
-  //     new web3(nodeURL)
-  //   );
-
-  //   const sdk = new FusionSDK({
-  //     url: "https://fusion.1inch.io",
-  //     network: crypto.chainId,
-  //     blockchainProvider,
-  //   });
-
-  //   console.log(sdk);
-
-  //   sdk
-  //     .placeOrder({
-  //       fromTokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // native
-  //       toTokenAddress: "0xc38315264475f2aa4e8ac09e0433ba40705acd9b", // wETH
-  //       amount: "1000000000000000000", // 0.01 native token
-  //       walletAddress: address,
-  //     })
-  //     .then(console.log);
-  // };
 
   const seo = {
     pageTitle: "home",
