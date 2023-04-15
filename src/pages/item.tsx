@@ -669,61 +669,26 @@ const ItemPage: React.FC = () => {
                             paddingRight: 20,
                           }}
                         >
-                          <Grid container direction="row" alignItems="center">
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
-                              <Typography
-                                variant="h5"
-                                className="font-medium mb-1"
-                              >
-                                {selectedItem.name}
-                              </Typography>
-                            </Grid>
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
-                              <Typography
-                                variant="h5"
-                                className="font-medium mb-1"
-                              >
-                                {selectedItem.price.toFixed(2)} wETH
-                              </Typography>
-                            </Grid>
-                            {/* <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <div>
-                                <LinkedSliders
-                                  maxValue={maxValue}
-                                  sliderValue1={sliderValue1}
-                                  sliderValue2={sliderValue2}
-                                  onSlider1Change={handleSlider1Change}
-                                  onSlider2Change={handleSlider2Change}
-                                />
-                                <Typography variant="h5" className="font-medium mb-1">
-                                  {sliderValue1} wETH from Mumbai
+                          <div>
+                            <div className="mb-10">
+                              <span className="font-bold text-xl font-roboto">
+                                NFT info
+                              </span>
+                              <div className="bg-slate-200 rounded mt-2">
+                                <Typography
+                                  variant="h6"
+                                  className="text-lg p-2 rounded-lg"
+                                >
+                                  Name : {selectedItem.name}{" "}
                                 </Typography>
-                                <Typography variant="h5" className="font-medium mb-1">
-                                  {sliderValue2} wETH from Linea
+                                <Typography
+                                  variant="h6"
+                                  className="text-lg p-2 rounded-lg"
+                                >
+                                  Price : {selectedItem.price.toFixed(2)} wETH
                                 </Typography>
                               </div>
-                            </Grid> */}
-                          </Grid>
-
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              flexGrow: 1,
-                              paddingLeft: 80,
-                              paddingRight: 80,
-                            }}
-                          >
+                            </div>
                             <Grid container direction="row" alignItems="center">
                               <Grid
                                 item
@@ -835,7 +800,7 @@ const ItemPage: React.FC = () => {
                                   style={{
                                     backgroundColor: "#1e90ff",
                                     alignSelf: "center",
-                                    fontSize: "1rem",
+                                    fontSize: "1.2rem",
                                     padding: "0.4rem 1rem",
                                     marginTop: "1rem",
                                   }}
@@ -845,11 +810,18 @@ const ItemPage: React.FC = () => {
                               </Grid>
                             </Grid>
                           </div>
+
+                          <Grid
+                            container
+                            direction="row"
+                            alignItems="center"
+                            className="mb-10"
+                          ></Grid>
                         </div>
                       </>
                     )}
                     <div>
-                      <div className="absolute flex rounded-lg outline-none justify-between p-10 mt-20 bg-white w-[800px]">
+                      <div className="absolute flex rounded-lg outline-none justify-between p-10 mt-5 bg-white w-[800px]">
                         <Stepper
                           activeStep={buyTxStatus}
                           alternativeLabel
