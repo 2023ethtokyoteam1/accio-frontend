@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Grid, Typography, Modal, Button, Container } from "@mui/material";
+import { Grid, Typography, Modal, Button, Container, Theme } from "@mui/material";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -25,6 +25,8 @@ import SimpleModal from "../components/SimpleModal";
 import { useEvmEvent } from "@/hooks/useEvmEvent";
 import { goerli, polygonMumbai } from "wagmi/chains";
 import TransitionLoading from "@/components/common/TransitionLoading";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface Item {
   id: number;
@@ -79,6 +81,14 @@ const ItemPage: React.FC = () => {
   const provider = useProvider();
   // const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/")
 
+  const [open, setOpen] = useState(false);
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleToggle = () => {
+    setOpen(!open);
+  };
+
   // Linea LiquidityAggregator#buy BuyMessageDispatched
   const {
     data: laBuyEventList,
@@ -131,38 +141,41 @@ const ItemPage: React.FC = () => {
 
   useEffect(() => {
     console.log("CurrentBuyStatus", buyTxStatus);
+    console.log("Current Requested Id", requsetedId);
     if (requsetedId !== 0 && buyTxStatus !== 4) {
       try {
         console.log("CurrentBuyStatus", buyTxStatus);
-        if (laHandleEventList) {
-          for (const singleEvent of laHandleEventList) {
-            const reqId = singleEvent.args[0].toNumber();
-            console.log("reqId", reqId);
-            console.log("requsetedId", requsetedId);
-            if (reqId === requsetedId) {
-              console.log("handle success", laHandleEventList);
-              setBuyTxStatus(2);
-            }
+        if (laHandleEventList && buyTxStatus == 1) {
+          const singleEvent = laHandleEventList[laHandleEventList.length - 1];
+
+          const reqId = singleEvent.args[0].toNumber();
+          console.log("reqId", reqId);
+          console.log("requsetedId", requsetedId);
+          if (reqId === requsetedId) {
+            console.log("handle success", laHandleEventList);
+            setBuyTxStatus(2);
           }
         }
 
-        if (laHandleWithTokensEventList) {
-          for (const singleEvent of laHandleWithTokensEventList) {
-            const reqId: number = singleEvent.args[0].toNumber();
-            if (reqId === requsetedId) {
-              console.log("handleWithTokens success", laHandleWithTokensEventList);
-              setBuyTxStatus(3);
-            }
+        if (laHandleWithTokensEventList && buyTxStatus == 2) {
+          const singleEvent = laHandleWithTokensEventList[laHandleWithTokensEventList.length - 1];
+
+          const reqId: number = singleEvent.args[0].toNumber();
+          if (reqId === requsetedId) {
+            console.log("handleWithTokens success", laHandleWithTokensEventList);
+            setBuyTxStatus(3);
           }
         }
 
-        if (marketBuyNFTEventList && buyTxStatus === 3) {
-          for (const singleEvent of marketBuyNFTEventList) {
-            const nftId: number = singleEvent.args[0].toNumber();
-            if (nftId === selectedItem?.id) {
-              console.log("marketBuyNFT success", marketBuyNFTEventList);
-              setBuyTxStatus(4);
-            }
+        if (marketBuyNFTEventList && buyTxStatus === 3 && selectedItem) {
+          const singleEvent = marketBuyNFTEventList[marketBuyNFTEventList.length - 1];
+
+          const nftId: number = singleEvent.args[0].toNumber();
+          console.log(nftId);
+          console.log(selectedItem.id);
+          if (nftId == selectedItem.id) {
+            console.log("marketBuyNFT success", marketBuyNFTEventList);
+            setBuyTxStatus(4);
           }
         }
       } catch (e) {
@@ -195,7 +208,7 @@ const ItemPage: React.FC = () => {
   const [osData, setOsData] = useState<openseaData | null>();
 
   const handleBuyButtonClick = async () => {
-    setInitLoading(true);
+    setOpen(true);
 
     const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: selectedItem?.id };
 
@@ -236,10 +249,10 @@ const ItemPage: React.FC = () => {
         setRequestedId(requestId);
         setBuyTxStatus(1);
         console.log("requestId", requestId);
-        setInitLoading(false);
+        setOpen(false);
       } catch (e) {
         console.log(e);
-        setInitLoading(false);
+        setOpen(false);
       }
     }
   };
@@ -375,16 +388,8 @@ const ItemPage: React.FC = () => {
       try {
         const airStack_key = process.env.NEXT_PUBLIC_AIRSTACK_API_KEY;
         const options = { headers: { authorization: airStack_key } };
-        const response = await axios.post(
-          "/api/latestTx",
-          { colAddress },
-          options
-        );
-        const response2 = await axios.post(
-          "/api/collection",
-          { colAddress },
-          options
-        );
+        const response = await axios.post("/api/latestTx", { colAddress }, options);
+        const response2 = await axios.post("/api/collection", { colAddress }, options);
 
         console.log("MetaData", response2);
         console.log("tx", response);
@@ -419,6 +424,15 @@ const ItemPage: React.FC = () => {
   const handleSlider2Change = (value: number) => {
     setSliderValue1(maxValue - value);
     setSliderValue2(value);
+  };
+
+  const modalStyle = {
+    zIndex: (theme: Theme) => theme.zIndex.modal,
+  };
+
+  const backdropStyle = {
+    color: "#fff",
+    zIndex: (theme: Theme) => theme.zIndex.modal + 1,
   };
 
   return (
@@ -519,7 +533,11 @@ const ItemPage: React.FC = () => {
                     ))}
                   </Grid>
                 </Grid>
-                <Modal open={isModalOpen} onClose={handleModalClose}>
+                <Modal
+                  open={isModalOpen}
+                  onClose={handleModalClose}
+                  sx={{ zIndex: (theme) => theme.zIndex.drawer + 10 }}
+                >
                   <div
                     className="bg-white py-4 rounded-lg outline-none"
                     style={{
@@ -679,7 +697,7 @@ const ItemPage: React.FC = () => {
                         <Stepper activeStep={buyTxStatus} alternativeLabel className="w-full">
                           {steps.map((label: Steps, idx: number) => (
                             <Step className="" key={label.id}>
-                              <StepLabel className={`${buyTxStatus == label.id ? "animate-pulse" : null}`}>
+                              <StepLabel className={`text-lg ${buyTxStatus == label.id ? "animate-pulse" : null}`}>
                                 <span>{label.title}</span>
                               </StepLabel>
                               {/* <Button
@@ -707,6 +725,13 @@ const ItemPage: React.FC = () => {
                   chainId={modalChainId}
                   onClose={handleNetworkChangeModalClose}
                 />
+                <Backdrop
+                  sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 100 }}
+                  open={open}
+                  onClick={handleClose}
+                >
+                  <CircularProgress color="inherit" />
+                </Backdrop>
               </Grid>
             </>
           ) : (
