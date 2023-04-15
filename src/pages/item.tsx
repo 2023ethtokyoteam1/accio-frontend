@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Grid, Typography, Modal, Button, Container, Theme } from "@mui/material";
+import { Grid, Typography, Modal, Button, Container, Theme, TextField } from "@mui/material";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -216,12 +216,12 @@ const ItemPage: React.FC = () => {
       {
         chainId: lineaGoerliTestnet.id,
         localWeth: deployedContracts.linea.weth,
-        localWethAmount: ethers.utils.parseEther("0.5"),
+        localWethAmount: ethers.utils.parseEther("0.8"),
       },
       {
         chainId: polygonMumbai.id,
         localWeth: deployedContracts.mumbai.hyp_weth,
-        localWethAmount: ethers.utils.parseEther("0.5"),
+        localWethAmount: ethers.utils.parseEther("0.2"),
       },
     ];
     if (signer && provider) {
@@ -412,9 +412,9 @@ const ItemPage: React.FC = () => {
     fetchOsData();
   }, []);
 
-  const maxValue = 100;
-  const [sliderValue1, setSliderValue1] = useState(maxValue / 2);
-  const [sliderValue2, setSliderValue2] = useState(maxValue / 2);
+  const maxValue = 1;
+  const [sliderValue1, setSliderValue1] = useState(0.2);
+  const [sliderValue2, setSliderValue2] = useState(0.8);
 
   const handleSlider1Change = (value: number) => {
     setSliderValue1(value);
@@ -635,6 +635,7 @@ const ItemPage: React.FC = () => {
                                 <Button
                                   variant="contained"
                                   color="primary"
+                                  disabled
                                   onClick={handleApproveButtonClickMumbai}
                                   style={{
                                     backgroundColor: "#1e90ff",
@@ -643,13 +644,14 @@ const ItemPage: React.FC = () => {
                                     padding: "0.4rem 1rem",
                                   }}
                                 >
-                                  Approve on Mumbai
+                                  Approved on Mumbai
                                 </Button>
                               </Grid>
                               <Grid item xs={6} marginBottom={2} className="flex justify-center">
                                 <Button
                                   variant="contained"
                                   color="primary"
+                                  disabled
                                   onClick={handleApproveButtonClickLinea}
                                   style={{
                                     backgroundColor: "#1e90ff",
@@ -658,17 +660,35 @@ const ItemPage: React.FC = () => {
                                     padding: "0.4rem 1rem",
                                   }}
                                 >
-                                  Approve on Linea
+                                  Approved on Linea
                                 </Button>
                               </Grid>
-                              <Grid item xs={6} className="flex justify-center">
+                              <Grid item xs={2} className="flex justify-center">
+                                <TextField
+                                  variant="outlined"
+                                  size="medium"
+                                  style={{ marginRight: "8px" }}
+                                  onChange={() => {}}
+                                  value={sliderValue1}
+                                />{" "}
+                              </Grid>
+                              <Grid item xs={4} className="flex justify-center">
                                 <Typography variant="h5" className="font-medium mb-1">
-                                  0.5 wETH from Mumbai
+                                  wETH from Mumbai
                                 </Typography>
                               </Grid>
-                              <Grid item xs={6} className="flex justify-center">
+                              <Grid item xs={2} className="flex justify-center">
+                                <TextField
+                                  variant="outlined"
+                                  size="medium"
+                                  style={{ marginRight: "8px" }}
+                                  onChange={() => {}}
+                                  value={sliderValue2}
+                                />{" "}
+                              </Grid>
+                              <Grid item xs={4} className="flex justify-center">
                                 <Typography variant="h5" className="font-medium mb-1">
-                                  0.5 wETH from Linea
+                                  wETH from Linea
                                 </Typography>
                               </Grid>
                               <Grid item xs={12} className="flex justify-center">
