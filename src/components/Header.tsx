@@ -6,22 +6,14 @@ import Image from "next/image";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
-import MenuItem from "@mui/material/MenuItem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
-const pages = [
-    { title: "my wallet", href: "/wallet" },
-    { title: "bidding", href: "/bidding" },
-    { title: "collection", href: "/collection" },
-];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+interface InternalLinkProps {
+    href?: string;
+    children: React.ReactNode;
+  }
 
 export default function Header() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -70,14 +62,14 @@ export default function Header() {
     return (
         <>
             <div
-                className={`sticky top-0 z-20 flex py-3 shadow-md my-auto"
+                className={`sticky top-0 z-20 flex pb-3 shadow-md my-auto bg-white"
         }`}
             >
                 <AppBar position="static" className=" bg-slate-700">
                     <Container maxWidth="xl">
-                        <Toolbar disableGutters>
+                        <Toolbar disableGutters className="flex justify-between">
                             <a href="/.">
-                                <Image src="/img/logo.png" width={200} height={50} className="aspect-auto w-48" alt="logo" />
+                                <Image src="/img/logo.png" width={200} height={50} className="aspect-auto w-48" alt="logo" priority={true}/>
                             </a>
                             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
                             </Box>
@@ -120,6 +112,9 @@ export default function Header() {
                                 </Menu>
                                 
                             </Box> */}
+                            <Link href="/mynft" className="2xl:hidden">
+                                <Button className="text-slate-300 mr-3" >My NFTs </Button>                            
+                            </Link>
                             <ConnectButton accountStatus="avatar"/>
                             
                         </Toolbar>

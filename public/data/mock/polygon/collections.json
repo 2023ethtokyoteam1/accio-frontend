@@ -1,0 +1,93 @@
+[
+
+    {
+        "name": "Trump Digital Trading Cards",
+        "slug" : "trump-digital-trading-cards",
+        "floor_price": 0.48,
+        "one_day_volume": 20.731086249900002,
+        "image_url": "https://i.seadn.io/gcs/files/f980181df268011a4491137fc71afdb5.jpg",
+        "address": "0x24A11e702CD90f034Ea44FaF1e180C0C654AC5d9"
+        
+    },
+    {
+        "name": "Lens Protocol Profiles",
+        "slug" : "lens-protocol-profiles",
+        "floor_price": 0.13,
+        "one_day_volume": 21.432198710943375,
+        "image_url": "https://i.seadn.io/gae/S67RadRtlIbTNk0UojZM-TEl4pybcblKyg3HxQHl0-JmxYZ2deLX-pK2Z89khCWHGeaXeYfE8Vxqj06YCUcqk0q1KWD9T997lGnGHw",
+        "address": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d"
+    },
+    {
+        "name": "The Sandbox",
+        "slug" : "sandbox",
+        "floor_price":0.619,
+        "one_day_volume":20.574308,
+        "image_url": "https://i.seadn.io/gae/SXH8tW1siikB80rwCRnjm1a5xM_MwTg9Xl9Db6mioIk9HIlDM09pVoSR7GKJgS6ulSUpgW9BDtMk_ePX_NKgO9A?auto=format&w=256",
+        "address": "0x5CC5B05a8A13E3fBDB0BB9FcCd98D38e50F90c38"
+    },
+    {
+        "name": "Alien Ape Invasion Club",
+        "slug" : "alienapeinvasionclub",
+        "floor_price":0.1983,
+        "one_day_volume":17.689999999999998,
+        "image_url": "https://i.seadn.io/gcs/files/9dbe8b526d7ab4b5fce887fe6b7e5ace.gif?auto=format&w=256",
+        "address": "0x667570aE3212dc0CF98B46CcF151011ff310949B"
+    },
+    {
+        "name": "BROZO",
+        "slug" : "brozo",
+        "floor_price":0.0448,
+        "one_day_volume":48.3700058139352,
+        "image_url": "https://i.seadn.io/gcs/files/615cae1487e52ce45840923e2c426f95.gif?auto=format&w=256",
+        "address": "0x220fa5cCc9404802ED6DB0935EB4feeFC27C937e"
+    },
+    {
+        "name": "Owlpha",
+        "slug" : "owlpha",
+        "floor_price":0.12708663,
+        "one_day_volume":11.430945280200007,
+        "image_url": "https://i.seadn.io/gcs/files/48d0c6fe91b0432cb80d03f32673c842.jpg?auto=format&w=256",
+        "address": "0x12AA01F646fe5C993C66c9C86EddAd4e514f6cBc"
+    },
+    {
+        "name": "Midnight Society Founders Access Pass",
+        "slug" : "founderaccesspass",
+        "floor_price":0.48,
+        "one_day_volume":0.71,
+        "image_url": "https://i.seadn.io/gcs/files/a0947c872cefa3128ebe2cbb6b70fe7f.jpg?auto=format&w=256",
+        "address": "0x89a4875C190565505B7891B700C2C6DC91816a47"
+    },
+    {
+        "name": "Voxies",
+        "slug" : "voxies",
+        "floor_price":0.44,
+        "one_day_volume":1.21,
+        "image_url": "https://i.seadn.io/gcs/files/01295592e6f93fa045b329beda60bc79.jpg?auto=format&w=256",
+        "address": "0xfbe3AB0cbFbD17d06bdD73aA3F55aaf038720F59"
+    },
+    {
+        "name": "Rekt Dogs",
+        "slug" : "rektdogs",
+        "floor_price":0.026711734751,
+        "one_day_volume":2.559842090035,
+        "image_url": "https://i.seadn.io/gcs/files/9527878b82204ea95089de2fe8550997.gif?auto=format&w=256",
+        "address": "0xAce8187B113a38F83Bd9C896C6878B175c234dCc"
+    },
+    {
+        "name": "Metaworld Cat",
+        "slug" : "metaworld-cat",
+        "floor_price":0.002675508,
+        "one_day_volume":1.40281749,
+        "image_url": "https://i.seadn.io/gcs/files/294b98bb969595bcdd8aa2fc3ae2e1c0.png?auto=format&w=256",
+        "address": "0xe6Ea485c426B00166cEE5543d610BBaAeE154FbE"
+    },
+    {
+        "name": "CyberKongz VX",
+        "slug" : "cyberkongz-vx",
+        "floor_price":0.37,
+        "one_day_volume":3.9100000000000006,
+        "image_url": "https://i.seadn.io/gcs/files/011e37ba0f1aa703aa27704162e597e8.png?auto=format&w=256",
+        "address": "0x57a204AA1042f6E66DD7730813f4024114d74f37"
+    }
+
+]

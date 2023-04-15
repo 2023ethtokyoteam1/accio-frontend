@@ -6,3 +6,7 @@
 body {
   font-family: 'roboto';
 }
+
+.titleText {
+  @apply font-extrabold text-2xl text-slate-600
+}
