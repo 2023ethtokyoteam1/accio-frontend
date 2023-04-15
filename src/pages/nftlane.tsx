@@ -1,8 +1,8 @@
 export default function nftlane() {
     return (
         <>
-            <div className="w-screen h-screen flex justify-center items-center text-2xl bg-blue-800">
-                <div className="w-2/5 bg-black h-screen flex items-center relative shadow-2xl">
+            <div className="w-screen h-screen flex justify-center items-center text-2xl ">
+                <div className="w-2/5  h-screen flex items-center relative shadow-2xl">
                     <div className="absolute top-0 left-0 bg-slate-700 w-full h-16 flex items-center pl-4">
                         Header / LOGO
                     </div>
