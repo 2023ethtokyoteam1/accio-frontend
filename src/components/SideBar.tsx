@@ -119,10 +119,10 @@ export default function SideBar() {
               }}
             >
               <Image
-                src="/img/accio.png"
+                src="/img/logo2.png"
                 width={250}
                 height={100}
-                className=" aspect-auto w-40 hover:scale-110 duration-300"
+                className=" aspect-auto w-60 hover:scale-110 duration-300"
                 alt="logo"
                 priority={true}
               />
