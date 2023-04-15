@@ -28,6 +28,7 @@ import {
   polygon,
   polygonMumbai,
   localhost,
+  bsc,
 } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import { lineaGoerliTestnet } from "@/config/chains";
@@ -35,7 +36,7 @@ import { balanceContext } from "../hooks/balanceContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const { chains, provider, webSocketProvider } = configureChains(
-  [goerli, polygonMumbai, optimismGoerli, lineaGoerliTestnet],
+  [goerli, polygonMumbai, optimismGoerli, lineaGoerliTestnet, bsc],
   [publicProvider()]
 );
 
