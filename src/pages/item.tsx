@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { Grid, Typography, Modal, Button, Container } from "@mui/material";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
 import TitleManager from "@/components/common/TitleManager";
 import axios from "axios";
 import { ethers, providers } from "ethers";
 import { ERC20, ERC20__factory } from "../typechain";
 import { Address, useProvider, useSigner } from "wagmi";
 import { useNetwork, useSwitchNetwork } from "wagmi";
-import PurchaseStepGuide from "@/components/nftCollections/PurchaseStepGuide";
 import { latestTx } from "@/config/types";
 import { openseaData } from "@/config/types";
 import ScatterChart from "../components/common/ScatterChart";
@@ -21,6 +23,7 @@ import LinkedSliders from "../components/LinkedSliders";
 import SimpleModal from "../components/SimpleModal";
 import { useEvmEvent } from "@/hooks/useEvmEvent";
 import { goerli, polygonMumbai } from "wagmi/chains";
+import TransitionLoading from "@/components/common/TransitionLoading";
 // import TransitionLoading from "../components/common/TransitionLoading";
 
 interface Item {
@@ -33,6 +36,11 @@ interface Item {
 interface ItemProps {
   crypto: Crypto;
   onBalanceUpdate: (name: string, balance: number, selected: boolean) => void;
+}
+
+interface Steps {
+  id: number;
+  title: string;
 }
 
 const useTokenContract = (address: Address) => {
@@ -60,9 +68,11 @@ const ItemPage: React.FC = () => {
   const [initLoading, setInitLoading] = useState<boolean>(false);
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [stepStatus, setStepStatus] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<number>(0);
-  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] = useState<boolean>(false);
+  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] =
+    useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
   // TODO : Hardcoded linea address
   const wETHContractMumbai = useTokenContract(deployedContracts.mumbai.weth);
@@ -92,11 +102,17 @@ const ItemPage: React.FC = () => {
   }, [laBuyEventList]);
 
   const { chain } = useNetwork();
-  const { isLoading: chainSwitchIsLoadingLinea, switchNetworkAsync: switchNetworkToLinea } = useSwitchNetwork({
+  const {
+    isLoading: chainSwitchIsLoadingLinea,
+    switchNetworkAsync: switchNetworkToLinea,
+  } = useSwitchNetwork({
     chainId: lineaGoerliTestnet.id,
   });
 
-  const { isLoading: chainSwitchIsLoadingMumbai, switchNetworkAsync: switchNetworkToMumbai } = useSwitchNetwork({
+  const {
+    isLoading: chainSwitchIsLoadingMumbai,
+    switchNetworkAsync: switchNetworkToMumbai,
+  } = useSwitchNetwork({
     chainId: polygonMumbai.id,
   });
 
@@ -107,8 +123,16 @@ const ItemPage: React.FC = () => {
     const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: 0 };
 
     const funds = [
-      { chainId: lineaGoerliTestnet.id, localWeth: deployedContracts.linea.weth, localWethAmount: 500_000_000_000 },
-      { chainId: polygonMumbai.id, localWeth: deployedContracts.mumbai.hyp_weth, localWethAmount: 500_000_000_000 },
+      {
+        chainId: lineaGoerliTestnet.id,
+        localWeth: deployedContracts.linea.weth,
+        localWethAmount: 500_000_000_000,
+      },
+      {
+        chainId: polygonMumbai.id,
+        localWeth: deployedContracts.mumbai.hyp_weth,
+        localWethAmount: 500_000_000_000,
+      },
     ];
     if (signer && provider) {
       const LAContract = new ethers.Contract(
@@ -139,7 +163,10 @@ const ItemPage: React.FC = () => {
     try {
       if (modalChainId === polygonMumbai.id && switchNetworkToMumbai) {
         await switchNetworkToMumbai();
-      } else if (modalChainId === lineaGoerliTestnet.id && switchNetworkToLinea) {
+      } else if (
+        modalChainId === lineaGoerliTestnet.id &&
+        switchNetworkToLinea
+      ) {
         await switchNetworkToLinea();
       }
     } catch (e) {
@@ -163,7 +190,10 @@ const ItemPage: React.FC = () => {
           setModalChainId(polygonMumbai.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractMumbai.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          await wETHContractMumbai
+            .connect(signer)
+            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          // setStepStatus(2);
         }
       } catch (e) {
         console.log(e);
@@ -178,7 +208,10 @@ const ItemPage: React.FC = () => {
           setModalChainId(lineaGoerliTestnet.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          await wETHContractLinea
+            .connect(signer)
+            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          // setStepStatus(3);
         }
       } catch (e) {
         console.log("error");
@@ -207,6 +240,13 @@ const ItemPage: React.FC = () => {
     ],
   };
 
+  const steps = [
+    { id: 0, title: "Approve Mumbai" },
+    { id: 1, title: "Approve Linea" },
+    { id: 2, title: "ttt3" },
+    { id: 3, title: "Receive the NFT" },
+  ];
+
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = "hidden";
@@ -233,7 +273,10 @@ const ItemPage: React.FC = () => {
     setInitLoading(true);
     const options = { method: "GET" };
     try {
-      const res = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}`, options);
+      const res = await axios.get(
+        `https://api.opensea.io/api/v1/collection/${slug}`,
+        options
+      );
       const result = res.data;
       setOsData(result.collection);
     } catch (e) {
@@ -247,7 +290,21 @@ const ItemPage: React.FC = () => {
     setInitLoading(true);
     if (colAddress) {
       try {
-        const response = await axios.post("/api/latestTx", { colAddress });
+        const airStack_key = process.env.NEXT_PUBLIC_AIRSTACK_API_KEY;
+        const options = { headers: { authorization: airStack_key } };
+        const response = await axios.post(
+          "/api/latestTx",
+          { colAddress },
+          options
+        );
+        const response2 = await axios.post(
+          "/api/collection",
+          { colAddress },
+          options
+        );
+
+        console.log("MetaData", response2);
+        console.log("tx", response);
 
         const data = response.data.map((d: any) => ({
           x: DateTime.fromISO(d.blockTimestamp.substring(0, 10)),
@@ -281,9 +338,6 @@ const ItemPage: React.FC = () => {
     setSliderValue2(value);
   };
 
-  console.log("osData", osData);
-  // console.log("txHistory", txHistory);
-
   return (
     <>
       <TitleManager seo={seo} />
@@ -296,14 +350,22 @@ const ItemPage: React.FC = () => {
             <>
               <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
                 <Image
-                  src={osData?.banner_image_url ? osData.banner_image_url : "/img/defaultBanner.jpg"}
+                  src={
+                    osData?.banner_image_url
+                      ? osData.banner_image_url
+                      : "/img/defaultBanner.jpg"
+                  }
                   width={400}
                   height={200}
                   className="w-full"
                   alt="BannerImg"
                 />
               </div>
-              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
+              <Grid
+                container
+                item
+                className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white"
+              >
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
@@ -311,24 +373,41 @@ const ItemPage: React.FC = () => {
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-pink-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           MarketCap : {osData?.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-green-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           Average : {osData?.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-blue-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           Floor : {osData?.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
                   <Typography className="m-2 p-5 h-32 overflow-y-scroll">
-                    {osData?.description ? osData.description : "description not found."}
+                    {osData?.description
+                      ? osData.description
+                      : "description not found."}
                   </Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
@@ -350,7 +429,13 @@ const ItemPage: React.FC = () => {
                     height: "60vh",
                   }}
                 >
-                  <Grid container item alignItems="top" spacing={4} padding={10}>
+                  <Grid
+                    container
+                    item
+                    alignItems="top"
+                    spacing={4}
+                    padding={10}
+                  >
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
                         <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
@@ -364,8 +449,12 @@ const ItemPage: React.FC = () => {
                             }}
                             className="w-[12vh] aspect-square mb-4"
                           />
-                          <Typography className="font-medium text-lg">{item.name}</Typography>
-                          <Typography className="font-medium text-lg mt-2">{item.price.toFixed(2)} wETH</Typography>
+                          <Typography className="font-medium text-lg">
+                            {item.name}
+                          </Typography>
+                          <Typography className="font-medium text-lg mt-2">
+                            {item.price.toFixed(2)} wETH
+                          </Typography>
                           <Grid item>
                             <Button
                               variant="contained"
@@ -437,13 +526,29 @@ const ItemPage: React.FC = () => {
                           }}
                         >
                           <Grid container direction="row" alignItems="center">
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Typography variant="h5" className="font-medium mb-1">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
+                              <Typography
+                                variant="h5"
+                                className="font-medium mb-1"
+                              >
                                 {selectedItem.name}
                               </Typography>
                             </Grid>
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Typography variant="h5" className="font-medium mb-1">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
+                              <Typography
+                                variant="h5"
+                                className="font-medium mb-1"
+                              >
                                 {selectedItem.price.toFixed(2)} wETH
                               </Typography>
                             </Grid>
@@ -506,7 +611,11 @@ const ItemPage: React.FC = () => {
                                   Approve on Linea
                                 </Button>
                               </Grid>
-                              <Grid item xs={12} className="flex justify-center">
+                              <Grid
+                                item
+                                xs={12}
+                                className="flex justify-center"
+                              >
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -527,7 +636,41 @@ const ItemPage: React.FC = () => {
                         </div>
                       </>
                     )}
-                    <PurchaseStepGuide />
+                    <div>
+                      <div className="absolute flex rounded-lg outline-none justify-between p-10 mt-20 bg-white w-[800px]">
+                        <Stepper
+                          activeStep={stepStatus}
+                          alternativeLabel
+                          className="w-full"
+                        >
+                          {steps.map((label: Steps, idx: number) => (
+                            <Step className="" key={label.id}>
+                              <StepLabel
+                                className={`${
+                                  stepStatus == label.id
+                                    ? "animate-pulse"
+                                    : null
+                                }`}
+                              >
+                                <span>{label.title}</span>
+                              </StepLabel>
+                              {/* <Button
+                                className={`${
+                                  stepStatus !== label.id
+                                    ? "text-slate-600"
+                                    : null
+                                } pl-20`}
+                                onClick={() => {
+                                  setStepStatus(label.id);
+                                }}
+                              >
+                                TestBtn
+                              </Button> */}
+                            </Step>
+                          ))}
+                        </Stepper>
+                      </div>
+                    </div>
                   </div>
                 </Modal>
                 <SimpleModal
@@ -538,7 +681,9 @@ const ItemPage: React.FC = () => {
                 />
               </Grid>
             </>
-          ) : null}
+          ) : (
+            <TransitionLoading />
+          )}
         </Grid>
       </Container>
     </>

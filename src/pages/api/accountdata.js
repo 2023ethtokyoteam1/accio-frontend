@@ -42,16 +42,17 @@ const query = (account) => `
     `;
 
 export default async (req, res) => {
-    try {
-        const { account } = req.body;
-        // const queryString = query(account !== '' ? account : "fc_fname:dwr");
-        const queryString = query(account);
-        const { TokenBalances } = await request(endPoint, queryString);
+  try {
+    const { account } = req.body;
+    const queryString = query(account == "" ? account : "fc_fname:dwr");
+    // const queryString = query(account);
+    // console.log(queryString);
+    const data = await request(endPoint, queryString);
+    // console.log(data);
 
-        // console.log(JSON.stringify(TokenBalances, null, 2));
-        res.status(200).json({ TokenBalances });
-    } catch (error) {
-        // console.error("Error:", error.message);
-        res.status(500).json({ message: error.message });
-    }
+    res.status(200).json(data);
+  } catch (error) {
+    // console.error("Error:", error.message);
+    res.status(500).json({ message: error.message });
+  }
 };

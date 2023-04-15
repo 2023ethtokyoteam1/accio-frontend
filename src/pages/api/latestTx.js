@@ -33,6 +33,7 @@ export default async (req, res) => {
     const queryString = query(colAddress);
     // console.log(queryString)
     const data = await request(endPoint, queryString);
+    console.log(data);
     // console.log(JSON.stringify(data, null, 2)); // 서버 콘솔에 전체 데이터 출력
     res.status(200).json(data.NFTSaleTransactions.NFTSaleTransaction);
   } catch (error) {
