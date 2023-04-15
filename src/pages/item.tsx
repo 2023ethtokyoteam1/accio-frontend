@@ -28,6 +28,7 @@ import { Address, useProvider, useSigner } from "wagmi";
 import { useNetwork, useSwitchNetwork } from "wagmi";
 import PurchaseStepGuide from "@/components/nftCollections/PurchaseStepGuide";
 import { latestTx } from "@/config/types";
+import { openseaData } from "@/config/types";
 import ScatterChart from "../components/common/ScatterChart";
 import { DateTime } from "luxon";
 import TransitionLoading from "../components/common/TransitionLoading";
@@ -91,8 +92,8 @@ const ItemPage: React.FC = () => {
   const { chain } = useNetwork();
   const { chains, error, isLoading: chainSwitchIsLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
 
-  const [txHistory, setTxHistory] = useState<latestTx[] | any>([]);
-  const [osData, setOsData] = useState([]);
+  const [txHistory, setTxHistory] = useState<latestTx[] | null>();
+  const [osData, setOsData] = useState<openseaData | null>();
 
   const handleBuyButtonClick = () => {
     alert("You have purchased this item!");
@@ -185,8 +186,10 @@ const ItemPage: React.FC = () => {
     if (colAddress) {
       try {
         const response = await axios.post("/api/latestTx", { colAddress });
+        console.log("ddddd");
+        console.log(response.data);
 
-        const data = response.data.map((d) => ({
+        const data = response.data.map((d: any) => ({
           x: DateTime.fromISO(d.blockTimestamp.substring(0, 10)),
           y: Number(ethers.utils.formatEther(d.paymentAmount)),
         }));
@@ -217,34 +220,34 @@ const ItemPage: React.FC = () => {
         >
           {!initLoading && osData ? (
             <>
-              <div className="w-full absolute left-0 -top-20 overflow-hidden">
-                <Image src={osData.banner_image_url} width={400} height={200} className="w-full" alt="BannerImg" />
+              <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
+                <Image src={osData.banner_image_url? osData.banner_image_url : '/img/defaultBanner.jpg'} width={400} height={200} className="w-full" alt="BannerImg" />
               </div>
-              <Grid container item className="mt-10 mx-10 rounded-t-lg bg-white z-10 h-60">
+              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
-                      {collectionQuery.id}
+                      {collectionQuery.id ? collectionQuery.id : 'project NAME'}
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button variant="extended" className="px-3 bg-pink-100" size="small" aria-label="add">
+                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
                           MarketCap : {osData.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button variant="extended" className="px-3 bg-green-100" size="small" aria-label="add">
+                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
                           Average : {osData.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button variant="extended" className="px-3 bg-blue-100" size="small" aria-label="add">
+                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
                           Floor : {osData.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
-                  <Typography className="m-2 p-5 h-32 overflow-y-scroll">{osData.description}</Typography>
+                  <Typography className="m-2 p-5 h-32 overflow-y-scroll">{osData.description ? osData.description : 'description not found.'}</Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
                   {/* { !txHistory && 
@@ -255,20 +258,20 @@ const ItemPage: React.FC = () => {
                   <ScatterChart data={scatterData} />
                 </Grid>
               </Grid>
-              <Grid item style={{ overflow: "hidden" }}>
+              <Grid item xs={12} style={{ overflow: "hidden" }}>
                 <Grid
                   container
                   className="w-full"
                   style={{
                     overflowY: "scroll",
                     maxHeight: "80vh",
-                    maxWidth: "130vh",
+                    height: "40vh"
                   }}
                 >
                   <Grid container item alignItems="center" spacing={4} padding={10}>
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
-                        <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-52 flex flex-col items-center justify-center">
+                        <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
                           <Image
                             src={item.imageUrl}
                             alt={item.name}
@@ -358,7 +361,7 @@ const ItemPage: React.FC = () => {
                           </Typography>
 
                           <Grid container direction="row" alignItems="center">
-                            <Grid item xs={6} marginBottom={2}>
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
                               <Button
                                 variant="contained"
                                 color="primary"
@@ -366,14 +369,14 @@ const ItemPage: React.FC = () => {
                                 style={{
                                   backgroundColor: "#1e90ff",
                                   alignSelf: "center",
-                                  fontSize: "1.2rem",
-                                  padding: "0.75rem 1.5rem",
+                                  fontSize: "1rem",
+                                  padding: "0.4rem 1rem",
                                 }}
                               >
                                 Approve on Polygon
                               </Button>
                             </Grid>
-                            <Grid item xs={6} marginBottom={2}>
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
                               <Button
                                 variant="contained"
                                 color="primary"
@@ -381,8 +384,38 @@ const ItemPage: React.FC = () => {
                                 style={{
                                   backgroundColor: "#1e90ff",
                                   alignSelf: "center",
-                                  fontSize: "1.2rem",
-                                  padding: "0.75rem 1.5rem",
+                                  fontSize: "1rem",
+                                  padding: "0.4rem 1rem",
+                                }}
+                              >
+                                Approve on Eth
+                              </Button>
+                            </Grid>
+                            <Grid item xs={6} className="flex justify-center">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleApproveButtonClick}
+                                style={{
+                                  backgroundColor: "#1e90ff",
+                                  alignSelf: "center",
+                                  fontSize: "1rem",
+                                  padding: "0.4rem 1rem",
+                                }}
+                              >
+                                Approve on Polygon
+                              </Button>
+                            </Grid>
+                            <Grid item xs={6} className="flex justify-center">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleBuyButtonClick}
+                                style={{
+                                  backgroundColor: "#1e90ff",
+                                  alignSelf: "center",
+                                  fontSize: "1rem",
+                                  padding: "0.4rem 1rem",
                                 }}
                               >
                                 Approve on Eth
@@ -396,8 +429,8 @@ const ItemPage: React.FC = () => {
                             style={{
                               backgroundColor: "#1e90ff",
                               alignSelf: "center",
-                              fontSize: "1.2rem",
-                              padding: "0.75rem 1.5rem",
+                              fontSize: "1rem",
+                              padding: "0.4rem 1rem",
                               marginTop: "1.5rem",
                             }}
                           >

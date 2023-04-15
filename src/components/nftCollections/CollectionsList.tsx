@@ -7,13 +7,21 @@ import ViewAgendaIcon from "@mui/icons-material/ViewAgenda";
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
 
 interface CollectionItem {
-  ranking: number;
   imageUrl: string;
   name: string;
   slug: string;
   floorPrice: number;
   volume: number;
   mainnet: string;
+  address: string;
+}
+
+interface MockDataItem {
+  name: string;
+  slug: string;
+  floor_price: number;
+  one_day_volume: number;
+  image_url: string;
   address: string;
 }
 
@@ -126,8 +134,7 @@ const CollectionsList: React.FC = () => {
         );
         const lineaData = await lineaResponse.json();
   
-        const newData3 = ethData.map((item) => ({
-          ranking: item.rank,
+        const newData3 = ethData.map((item: MockDataItem) => ({
           imageUrl: item.image_url || "https://via.placeholder.com/100",
           name: item.name || `Data Item`,
           slug : item.slug || 'Data Slug',
@@ -136,8 +143,7 @@ const CollectionsList: React.FC = () => {
           mainnet: "eth",
           address: item.address
         }));
-        const newData2 = polygonData.map((item) => ({
-          ranking: item.rank,
+        const newData2 = polygonData.map((item: MockDataItem) => ({
           imageUrl: item.image_url || "https://via.placeholder.com/100",
           name: item.name || `Data Item`,
           slug : item.slug || 'Data Slug',
@@ -145,8 +151,7 @@ const CollectionsList: React.FC = () => {
           volume: item.one_day_volume || Math.random() * 10000,
           mainnet: "matic",
         }));
-        const newData1 = lineaData.map((item) => ({
-          ranking: item.rank,
+        const newData1 = lineaData.map((item: MockDataItem) => ({
           imageUrl: item.image_url || "https://via.placeholder.com/100",
           name: item.name || `Data Item`,
           slug : item.slug || 'Data Slug',
@@ -327,8 +332,8 @@ const CollectionsList: React.FC = () => {
                         .toLowerCase()
                         .includes(inputCollection.toLowerCase()) && (
                         // item.floorPrice < availableBalance &&
-                        <Grid item xs={collectionGrid} key={index}>
-                          <DataItem key={index} item={item} />
+                        <Grid item xs={collectionGrid} key={index} className="overflow-hidden">
+                          <DataItem item={item} />
                         </Grid>
                       )
                   )}

@@ -15,7 +15,7 @@ export default function Layout({ children }: MyComponentProps) {
         <div className="">
           <SideBar />
         </div>
-        <div className="">{children}</div>
+        <div className="w-full">{children}</div>
       </div>
       
     </div>

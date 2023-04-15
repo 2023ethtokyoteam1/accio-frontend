@@ -1,3 +1,5 @@
+import { Link } from "react-scroll";
+
 export default function ScrollEventBtn() {
     return (
         <>

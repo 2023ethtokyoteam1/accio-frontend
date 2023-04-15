@@ -14,6 +14,9 @@ export const lineaGoerliTestnet: Chain = {
     default: {
       http: ['https://rpc.goerli.linea.build/'],
     },
+    public : {
+      http: ['https://rpc.goerli.linea.build/'],
+    }
   },
   testnet: true,
 };

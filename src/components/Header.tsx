@@ -73,50 +73,12 @@ export default function Header() {
                             </a>
                             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
                             </Box>
-
-                            {/* <Box sx={{ flexGrow: 0 }} className='flex items-center'>
-                                <Tooltip title="Open settings">
-                                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                        <Image
-                                            alt="profile"
-                                            src="/img/photo_sample.jpg"
-                                            width={300}
-                                            height={300}
-                                            className="rounded-full w-16 aspect-square"
-                                        />
-                                    </IconButton>
-                                </Tooltip>
-                                
-                                <Menu
-                                    sx={{ mt: "45px" }}
-                                    id="menu-appbar"
-                                    anchorEl={anchorElUser}
-                                    anchorOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
-                                    keepMounted
-                                    transformOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
-                                    open={Boolean(anchorElUser)}
-                                    onClose={handleCloseUserMenu}
-                                >
-                                    {pages.map((page) => (
-                                        <MenuItem key={page.title} onClick={handleCloseUserMenu}>
-                                            <Typography textAlign="center">{page.title}</Typography>
-                                        </MenuItem>
-                                    ))}
-                                    
-                                </Menu>
-                                
-                            </Box> */}
-                            <Link href="/mynft" className="2xl:hidden">
-                                <Button className="text-slate-300 mr-3" >My NFTs </Button>                            
-                            </Link>
-                            <ConnectButton accountStatus="avatar"/>
-                            
+                            <div className="flex">
+                                <Link href="/mynft" className="2xl:hidden">
+                                    <Button className="text-slate-300 mr-3" >My NFTs </Button>                            
+                                </Link>
+                                <ConnectButton accountStatus="avatar"/>
+                            </div>
                         </Toolbar>
                     </Container>
                 </AppBar>

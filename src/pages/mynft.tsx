@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Grid, Typography, Modal, Button, Container } from "@mui/material";
 import { TokenBalance } from "@/config/types";
 
-export default function mynft() {
+const MyNFT: React.FC = () => {
   const [initLoading, setInitLoading] = useState(false);
   const [data, setData] = useState<TokenBalance[] | any>({ TokenBalance: [] });
   const [account, setAccount] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export default function mynft() {
     }
   }
 
-  const handleImgError = (event) => {
+  const handleImgError = (event: any) => {
     event.target.src = "/img/defaultImg.png";
   };
 
@@ -65,46 +65,48 @@ export default function mynft() {
     <>
       {/* Connect Assets */}
       <TitleManager seo={seo} />
-        <Container>
-          <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white bg-opacity-50">
-            <div className="flex justify-between relative">
-              <div className="titleText">My NFTs : {data.TokenBalance.length}</div>
-            </div>
-            <Grid container direction="column" alignItems="center" spacing={2} className="">
-              <div className="grid grid-cols-4 mt-10 w-full gap-8">
-                {data.TokenBalance &&
-                  data.TokenBalance.map((nft, index: number) => (
-                    <div key={index}>
-                      <div className="w-48 h-48 overflow-hidden rounded-lg hover:scale-105 duration-300">
-                        {nft.tokenNfts.metaData.image ? (
-                          <Image
-                            src={nft.tokenNfts.metaData.image}
-                            width={200}
-                            height={200}
-                            onError={handleImgError}
-                            className="aspect-square"
-                            unoptimized={true}
-                            alt="nftImages"
-                          />
-                        ) : (
-                          <Image
-                            src="/img/defaultImg.png"
-                            width={200}
-                            height={200}
-                            className="aspect-square"
-                            unoptimized={true}
-                            alt="nftImages"
-                          />
-                        )}
-                      </div>
-                      <p>{nft.token.name}</p>
-                      <p>{nft.tokenNfts.tokenId}</p>
+      <Container>
+        <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white bg-opacity-50">
+          <div className="flex justify-between relative">
+            <div className="titleText">My NFTs : {data.TokenBalance?.length}</div>
+          </div>
+          <Grid container direction="column" alignItems="center" spacing={2} className="">
+            <div className="grid grid-cols-4 mt-10 w-full gap-8">
+              {data.TokenBalance &&
+                data.TokenBalance.map((nft: any, index: number) => (
+                  <div key={index}>
+                    <div className="w-48 h-48 overflow-hidden rounded-lg hover:scale-105 duration-300">
+                      {nft.tokenNfts.metaData.image ? (
+                        <Image
+                          src={nft.tokenNfts.metaData.image}
+                          width={200}
+                          height={200}
+                          onError={handleImgError}
+                          className="aspect-square"
+                          unoptimized={true}
+                          alt="nftImages"
+                        />
+                      ) : (
+                        <Image
+                          src="/img/defaultImg.png"
+                          width={200}
+                          height={200}
+                          className="aspect-square"
+                          unoptimized={true}
+                          alt="nftImages"
+                        />
+                      )}
                     </div>
-                  ))}
-              </div>
-            </Grid>
-          </section>
-        </Container>
+                    <p>{nft.token.name}</p>
+                    <p>{nft.tokenNfts.tokenId}</p>
+                  </div>
+                ))}
+            </div>
+          </Grid>
+        </section>
+      </Container>
     </>
   );
-}
+};
+
+export default MyNFT;

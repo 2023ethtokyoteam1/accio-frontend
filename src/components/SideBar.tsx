@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/dist/client/image";
 import { motion } from "framer-motion";
 import { styled } from "@mui/material/styles";
+import { ListItem, Avatar, ListItemAvatar, ListItemText } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -13,7 +14,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { Container } from "@mui/material";
-import { balanceContext } from "../hooks/balanceContext"
+import { balanceContext } from "../hooks/balanceContext";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -56,8 +58,8 @@ function BootstrapDialogTitle(props: DialogTitleProps) {
 
 export default function SideBar() {
   const [open, setOpen] = useState(false);
-  const { totalBalance : sidebarwETH, setTotalBalance } = useContext(balanceContext);
-  
+  const { totalBalance: sidebarwETH, setTotalBalance } = useContext(balanceContext);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -66,7 +68,7 @@ export default function SideBar() {
   };
 
   const steps = ["Wallet & Mainnet Connect ", "Find & Buy NFT", "Wait & Receive NFT"];
-  
+
   return (
     <>
       {/* Floating MenuBar, Only Support PC */}
@@ -100,14 +102,14 @@ export default function SideBar() {
             <motion.button
               onClick={handleClickOpen}
               initial
-              animate={{ translateX : [0, 3, -2, 1] }}
-              transition={{ 
-                  duration: 2,
-                  ease: "easeInOut",
-                  times: [0, 0.2, 0.5, 0.8, 1],
-                  repeat: Infinity,
-                  repeatDelay: 1
-                }}
+              animate={{ translateX: [0, 3, -2, 1] }}
+              transition={{
+                duration: 2,
+                ease: "easeInOut",
+                times: [0, 0.2, 0.5, 0.8, 1],
+                repeat: Infinity,
+                repeatDelay: 1,
+              }}
             >
               <Image
                 src="/img/symbol_q.png"
@@ -120,13 +122,25 @@ export default function SideBar() {
             </motion.button>
           </div>
         </div>
-        <div className="flex justify-center items-center shadow-lg hover:ring hover:ring-yellow-100 ring-slate-100 p-10 mt-10 rounded-2xl bg-yellow-100 w-80 h-40 relative">
-          <div>
-            <Typography className="absolute left-4 top-2 font-pop font-semibold text-slate-600">Available Balance</Typography>
-            <Box sx={{ width: "100%" }} className="mt-10">
-              {sidebarwETH.toFixed(4)} wETH
-            </Box>
-          </div>
+        <div className="flex justify-center items-center shadow-lg hover:ring hover:ring-yellow-100 ring-slate-100 mt-10 rounded-2xl bg-yellow-100 w-80 h-20 relative">
+          <ListItem>
+            <ListItemAvatar>
+              <Avatar>
+                <AccountBalanceWalletIcon />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary="Available Balance"
+              secondary={
+                <>
+                  <Typography sx={{ display: "inline" }} component="span" variant="h5" color="text.primary">
+                    {sidebarwETH.toFixed(4)}
+                  </Typography>
+                  {" wETH "}
+                </>
+              }
+            />
+          </ListItem>
         </div>
       </Container>
       {/* Dialog */}
@@ -141,7 +155,7 @@ export default function SideBar() {
           <Typography gutterBottom my={2} className="font-roboto text-slate-800">
             Discover CrossUniFT, the game-changing service that unifies the process of purchasing NFTs across multiple
             chains. Say goodbye to the constraints of individual networks. With CrossUniFT, effortlessly combine your
-            virtual currencies from various chains to acquire the NFTs you've been eyeing.
+            virtual currencies from various chains to acquire the NFTs you have been eyeing.
           </Typography>
           <Typography gutterBottom my={2} className="font-roboto text-slate-800">
             Picture this: 3 ETH on Ethereum, 2 WETH on Gnosis, and 1 WETH on Optimism - with CrossUniFT, you can
