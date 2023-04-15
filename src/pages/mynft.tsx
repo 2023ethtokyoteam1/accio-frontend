@@ -18,7 +18,9 @@ const MyNFT: React.FC = () => {
         await window.ethereum.request({ method: "eth_requestAccounts" });
 
         // Get the user's account address
-        const provider = new ethers.providers.Web3Provider(window.ethereum as any);
+        const provider = new ethers.providers.Web3Provider(
+          window.ethereum as any
+        );
         const signer = provider.getSigner();
         const account = await signer.getAddress();
 
@@ -29,7 +31,9 @@ const MyNFT: React.FC = () => {
         return null;
       }
     } else {
-      console.error("Non-Ethereum browser detected. Please install MetaMask or another web3-compatible browser.");
+      console.error(
+        "Non-Ethereum browser detected. Please install MetaMask or another web3-compatible browser."
+      );
       return null;
     }
   }
@@ -58,7 +62,8 @@ const MyNFT: React.FC = () => {
 
   const seo = {
     pageTitle: "MyNFTs",
-    pageDescription: "An integrated service that allows you to purchase NFTs regardless of the mainnet.",
+    pageDescription:
+      "An integrated service that allows you to purchase NFTs regardless of the mainnet.",
   };
 
   return (
@@ -66,11 +71,19 @@ const MyNFT: React.FC = () => {
       {/* Connect Assets */}
       <TitleManager seo={seo} />
       <Container>
-        <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white bg-opacity-50">
-          <div className="flex justify-between relative">
-            <div className="titleText">My NFTs : {data.TokenBalance?.length}</div>
+        <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white w-full">
+          <div className="flex justify-between relative ">
+            <div className="titleText">
+              My NFTs : {data.TokenBalance?.length}
+            </div>
           </div>
-          <Grid container direction="column" alignItems="center" spacing={2} className="">
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            spacing={2}
+            className=""
+          >
             <div className="grid grid-cols-4 mt-10 w-full gap-8">
               {data.TokenBalance &&
                 data.TokenBalance.map((nft: any, index: number) => (

@@ -31,7 +31,6 @@ import { latestTx } from "@/config/types";
 import { openseaData } from "@/config/types";
 import ScatterChart from "../components/common/ScatterChart";
 import { DateTime } from "luxon";
-import TransitionLoading from "../components/common/TransitionLoading";
 import Tooltip from "@mui/material/Tooltip";
 
 interface Item {
@@ -52,7 +51,10 @@ const useLAContract = (address: Address) => {
 
   useEffect(() => {
     if (address && provider) {
-      const contractInstance = LiquidityAggregator__factory.connect(address, provider);
+      const contractInstance = LiquidityAggregator__factory.connect(
+        address,
+        provider
+      );
       setContract(contractInstance);
     }
   }, [address, provider]);
@@ -87,10 +89,18 @@ const ItemPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
-  const wETHContract = useTokenContract("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6");
+  const wETHContract = useTokenContract(
+    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
+  );
   const LAContract = useLAContract("0xLAContractAddress");
   const { chain } = useNetwork();
-  const { chains, error, isLoading: chainSwitchIsLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
+  const {
+    chains,
+    error,
+    isLoading: chainSwitchIsLoading,
+    pendingChainId,
+    switchNetwork,
+  } = useSwitchNetwork();
 
   const [txHistory, setTxHistory] = useState<latestTx[] | null>();
   const [osData, setOsData] = useState<openseaData | null>();
@@ -118,7 +128,9 @@ const ItemPage: React.FC = () => {
           switchNetwork(1);
         }
 
-        await wETHContract.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+        await wETHContract
+          .connect(signer)
+          .approve(await signer.getAddress(), ethers.constants.MaxUint256);
       } catch (e) {
         console.log("error");
       }
@@ -172,11 +184,15 @@ const ItemPage: React.FC = () => {
     setInitLoading(true);
     const options = { method: "GET" };
     try {
-      const res = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}`, options);
+      const res = await axios.get(
+        `https://api.opensea.io/api/v1/collection/${slug}`,
+        options
+      );
       const result = res.data;
       setOsData(result.collection);
     } catch {
       console.error(error);
+      setOsData(null);
     }
     setInitLoading(false);
   };
@@ -216,39 +232,72 @@ const ItemPage: React.FC = () => {
           container
           className="relative ring ring-slate-100 hover:ring-2 hover:ring-yellow-100 rounded-lg mt-10 bg-white overflow-hidden"
         >
-          {!initLoading && osData ? (
+          {!initLoading ? (
             <>
               <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
-                <Image src={osData.banner_image_url? osData.banner_image_url : '/img/defaultBanner.jpg'} width={400} height={200} className="w-full" alt="BannerImg" />
+                <Image
+                  src={
+                    osData?.banner_image_url
+                      ? osData.banner_image_url
+                      : "/img/defaultBanner.jpg"
+                  }
+                  width={400}
+                  height={200}
+                  className="w-full"
+                  alt="BannerImg"
+                />
               </div>
-              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
+              <Grid
+                container
+                item
+                className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white"
+              >
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
-                      {collectionQuery.id ? collectionQuery.id : 'project NAME'}
+                      {collectionQuery.id ? collectionQuery.id : "project NAME"}
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
-                          MarketCap : {osData.stats?.market_cap?.toFixed(3)}
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-pink-400"
+                          size="small"
+                          aria-label="add"
+                        >
+                          MarketCap : {osData?.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
-                          Average : {osData.stats?.average_price?.toFixed(3)}
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-green-400"
+                          size="small"
+                          aria-label="add"
+                        >
+                          Average : {osData?.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
-                          Floor : {osData.stats?.floor_price?.toFixed(3)}
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-blue-400"
+                          size="small"
+                          aria-label="add"
+                        >
+                          Floor : {osData?.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
-                  <Typography className="m-2 p-5 h-32 overflow-y-scroll">{osData.description ? osData.description : 'description not found.'}</Typography>
+                  <Typography className="m-2 p-5 h-32 overflow-y-scroll">
+                    {osData?.description
+                      ? osData.description
+                      : "description not found."}
+                  </Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
-                  {/* { !txHistory && 
+                  {/* { !txHistory &&
                   <div className="absolute left-0 top-0 bg-slate-600 w-full h-72 bg-opacity-30 rounded-lg flex items-center justify-center">
                     Sorry. We currently only support Ethereum.
                   </div>
@@ -263,10 +312,16 @@ const ItemPage: React.FC = () => {
                   style={{
                     overflowY: "scroll",
                     maxHeight: "80vh",
-                    height: "40vh"
+                    height: "60vh",
                   }}
                 >
-                  <Grid container item alignItems="center" spacing={4} padding={10}>
+                  <Grid
+                    container
+                    item
+                    alignItems="top"
+                    spacing={4}
+                    padding={10}
+                  >
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
                         <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
@@ -280,8 +335,12 @@ const ItemPage: React.FC = () => {
                             }}
                             className="w-[12vh] aspect-square mb-4"
                           />
-                          <Typography className="font-medium text-lg">{item.name}</Typography>
-                          <Typography className="font-medium text-lg mt-2">{item.price.toFixed(2)} ETH</Typography>
+                          <Typography className="font-medium text-lg">
+                            {item.name}
+                          </Typography>
+                          <Typography className="font-medium text-lg mt-2">
+                            {item.price.toFixed(2)} ETH
+                          </Typography>
                           <Grid item>
                             <Button
                               variant="contained"
@@ -359,7 +418,12 @@ const ItemPage: React.FC = () => {
                           </Typography>
 
                           <Grid container direction="row" alignItems="center">
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
                               <Button
                                 variant="contained"
                                 color="primary"
@@ -374,7 +438,12 @@ const ItemPage: React.FC = () => {
                                 Approve on Polygon
                               </Button>
                             </Grid>
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
                               <Button
                                 variant="contained"
                                 color="primary"
@@ -442,9 +511,7 @@ const ItemPage: React.FC = () => {
                 </Modal>
               </Grid>
             </>
-          ) : (
-            <TransitionLoading />
-          )}
+          ) : null}
         </Grid>
       </Container>
     </>

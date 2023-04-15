@@ -5,9 +5,12 @@ import TitleManager from "@/components/common/TitleManager";
 import MyAsset from "@/components/myAssets/MyAsset";
 import CollectionsList from "@/components/nftCollections/CollectionsList";
 import { balanceContext } from "../hooks/balanceContext";
+import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
 
 export default function Home() {
-  const { balances, setBalances, totalBalance, setTotalBalance } = useContext(balanceContext);
+  const [dropDownStatus, setDropDownStatus] = useState<boolean>(true);
+  const { balances, setBalances, totalBalance, setTotalBalance } =
+    useContext(balanceContext);
 
   const cryptoList: Crypto[] = [
     {
@@ -44,20 +47,28 @@ export default function Home() {
     },
   ];
 
-  const handleBalanceUpdate = (name: string, balance: number, selected: boolean) => {
+  const handleBalanceUpdate = (
+    name: string,
+    balance: number,
+    selected: boolean
+  ) => {
     const newBalances = {
       ...balances,
       [name]: selected ? balance : 0,
     };
     setBalances(newBalances);
 
-    const totbal = Object.values(newBalances).reduce((tot, bal) => tot + bal, 0);
+    const totbal = Object.values(newBalances).reduce(
+      (tot, bal) => tot + bal,
+      0
+    );
     setTotalBalance(totbal);
   };
 
   const seo = {
     pageTitle: "home",
-    pageDescription: "An integrated service that allows you to purchase NFTs regardless of the mainnet.",
+    pageDescription:
+      "An integrated service that allows you to purchase NFTs regardless of the mainnet.",
   };
 
   return (
@@ -66,23 +77,34 @@ export default function Home() {
         {/* Connect Assets */}
         <TitleManager seo={seo} />
         <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white">
-          {/* wallet disconnected ? 검은 박스로 */}
-          {/* { window.ethereum == "undefined" &&
-              <div className="absolute left-0 top-0 bg-black w-full h-80 z-30 opacity-50 rounded-lg"></div>
-            } */}
           <div className="flex justify-between relative">
             <div className="titleText">My assets</div>
             <div>
-              <p className="text-right">Available Balance</p>
-              <div className="text-3xl text-right">{totalBalance.toFixed(3)} wETH</div>
+              <div className="text-right">Available Balance</div>
+              <div className="text-3xl text-right">
+                {totalBalance.toFixed(3)} wETH
+              </div>
             </div>
           </div>
-          <div className="grid lg:grid-cols-4 mt-10 lg:mt-16 w-full gap-8">
-            {cryptoList.map((crypto, idx) => (
-              <MyAsset key={crypto.name} crypto={crypto} onBalanceUpdate={handleBalanceUpdate} />
-            ))}
+          {dropDownStatus && (
+            <div className="grid lg:grid-cols-4 mt-10 lg:mt-16 w-full gap-8 duration-300">
+              {cryptoList.map((crypto, idx) => (
+                <MyAsset
+                  key={crypto.name}
+                  crypto={crypto}
+                  onBalanceUpdate={handleBalanceUpdate}
+                />
+              ))}
+              <div className="h-40">testtesttest</div>
+            </div>
+          )}
+          <div
+            className={`absolute top-2 right-2 font-bold cursor-pointer text-lg text-center
+            ${dropDownStatus && "rotate-180"}`}
+            onClick={() => setDropDownStatus(!dropDownStatus)}
+          >
+            <ExpandCircleDownIcon />
           </div>
-          {/* <div className="font-bold text-xl text-slate-600 mt-10 text-center" onClick={()=> setDropDownStatus(!dropDownStatus)}>show detail</div> */}
         </section>
         <section className="relative ring hover:ring-yellow-100 ring-slate-100 p-10 rounded-lg mt-10 bg-white">
           <CollectionsList />

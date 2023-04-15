@@ -13,7 +13,12 @@ import {
   RainbowKitProvider,
   RainbowKitAuthenticationProvider,
 } from "@rainbow-me/rainbowkit";
-import { coinbaseWallet, metaMaskWallet, trustWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
+import {
+  coinbaseWallet,
+  metaMaskWallet,
+  trustWallet,
+  walletConnectWallet,
+} from "@rainbow-me/rainbowkit/wallets";
 import { createClient, configureChains, WagmiConfig } from "wagmi";
 import {
   mainnet,
@@ -54,12 +59,12 @@ const { chains, provider, webSocketProvider } = configureChains(
 );
 
 const { wallets } = getDefaultWallets({
-  appName: "CrossUnift",
+  appName: "Accio",
   chains,
 });
 
 const appInfo = {
-  appName: "CrossUnift",
+  appName: "Accio",
 };
 
 const connectors = connectorsForWallets(wallets);
@@ -97,8 +102,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <WagmiConfig client={client}>
-        <RainbowKitProvider chains={chains} theme={lightTheme({ borderRadius: "small" })} appInfo={appInfo}>
-          <balanceContext.Provider value={{ balances, setBalances, totalBalance, setTotalBalance }}>
+        <RainbowKitProvider
+          chains={chains}
+          theme={lightTheme({ borderRadius: "small" })}
+          appInfo={appInfo}
+        >
+          <balanceContext.Provider
+            value={{ balances, setBalances, totalBalance, setTotalBalance }}
+          >
             <Layout>
               {/* <CssBaseline /> */}
               <Component {...pageProps} />

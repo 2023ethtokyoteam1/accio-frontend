@@ -58,7 +58,8 @@ function BootstrapDialogTitle(props: DialogTitleProps) {
 
 export default function SideBar() {
   const [open, setOpen] = useState(false);
-  const { totalBalance: sidebarwETH, setTotalBalance } = useContext(balanceContext);
+  const { totalBalance: sidebarwETH, setTotalBalance } =
+    useContext(balanceContext);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -67,14 +68,18 @@ export default function SideBar() {
     setOpen(false);
   };
 
-  const steps = ["Wallet & Mainnet Connect ", "Find & Buy NFT", "Wait & Receive NFT"];
+  const steps = [
+    "Wallet & Mainnet Connect ",
+    "Find & Buy NFT",
+    "Wait & Receive NFT",
+  ];
 
   return (
     <>
       {/* Floating MenuBar, Only Support PC */}
-      <Container className="mt-10 mx-10 hidden lg:block">
+      <div className="mt-10 hidden lg:block">
         <div
-          className={`flex justify-center items-center shadow-g hover:ring hover:ring-yellow-100 p-10 rounded-2xl bg-white bg-opacity-50 w-80 h-96 relative overflow-hidden ${
+          className={`flex justify-center items-center shadow-g hover:ring hover:ring-yellow-100 p-10 rounded-2xl bg-white w-60 h-72 2xl:w-80 2xl:h-96 relative overflow-hidden ${
             open ? "bg-[#00BCD4]" : "bg-white"
           }`}
         >
@@ -92,7 +97,9 @@ export default function SideBar() {
             <Link
               href="/mynft"
               className={`absolute -right-28 -bottom-20 bg-[#4CAF50] ${
-                open ? "opacity-0 -translate-x-10 -translate-y-10" : "opacity-40"
+                open
+                  ? "opacity-0 -translate-x-10 -translate-y-10"
+                  : "opacity-40"
               } -rotate-[37deg] w-96 h-48 flex items-start hover:scale-105 hover:opacity-70 duration-300`}
             >
               <div className="rotate-[37deg] translate-x-44 translate-y-12 text-2xl bg-slate font-pop font-bold underline italic">
@@ -112,9 +119,9 @@ export default function SideBar() {
               }}
             >
               <Image
-                src="/img/symbol_q.png"
-                width={200}
-                height={50}
+                src="/img/accio.png"
+                width={600}
+                height={200}
                 className="aspect-auto w-60 hover:scale-110 duration-300"
                 alt="logo"
                 priority={true}
@@ -122,7 +129,7 @@ export default function SideBar() {
             </motion.button>
           </div>
         </div>
-        <div className="flex justify-center items-center shadow-lg hover:ring hover:ring-yellow-100 ring-slate-100 mt-10 rounded-2xl bg-yellow-100 w-80 h-20 relative">
+        <div className="flex justify-center items-center shadow-lg hover:ring hover:ring-yellow-100 ring-slate-100 mt-10 rounded-2xl bg-yellow-100 w-60 2xl:w-80 h-20 relative">
           <ListItem>
             <ListItemAvatar>
               <Avatar>
@@ -133,7 +140,12 @@ export default function SideBar() {
               primary="Available Balance"
               secondary={
                 <>
-                  <Typography sx={{ display: "inline" }} component="span" variant="h5" color="text.primary">
+                  <Typography
+                    sx={{ display: "inline" }}
+                    component="span"
+                    variant="h5"
+                    color="text.primary"
+                  >
                     {sidebarwETH.toFixed(4)}
                   </Typography>
                   {" wETH "}
@@ -142,29 +154,53 @@ export default function SideBar() {
             />
           </ListItem>
         </div>
-      </Container>
+      </div>
       {/* Dialog */}
-      <BootstrapDialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
-        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          CrossUniFT
+      <BootstrapDialog
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+      >
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={handleClose}
+        >
+          Accio
         </BootstrapDialogTitle>
         <DialogContent dividers>
           <Typography variant="h1" align="center">
             🛫
           </Typography>
-          <Typography gutterBottom my={2} className="font-roboto text-slate-800">
-            Discover CrossUniFT, the game-changing service that unifies the process of purchasing NFTs across multiple
-            chains. Say goodbye to the constraints of individual networks. With CrossUniFT, effortlessly combine your
-            virtual currencies from various chains to acquire the NFTs you have been eyeing.
+          <Typography
+            gutterBottom
+            my={2}
+            className="font-roboto text-slate-800"
+          >
+            Discover Accio, the game-changing service that unifies the process
+            of purchasing NFTs across multiple chains. Say goodbye to the
+            constraints of individual networks. With Accio, effortlessly combine
+            your virtual currencies from various chains to acquire the NFTs you
+            have been eyeing.
           </Typography>
-          <Typography gutterBottom my={2} className="font-roboto text-slate-800">
-            Picture this: 3 ETH on Ethereum, 2 WETH on Gnosis, and 1 WETH on Optimism - with CrossUniFT, you can
-            smoothly pool these assets to purchase an NFT priced at 6 ETH, all through one intuitive platform.
+          <Typography
+            gutterBottom
+            my={2}
+            className="font-roboto text-slate-800"
+          >
+            Picture this: 3 ETH on Ethereum, 2 WETH on Gnosis, and 1 WETH on
+            Optimism - with Accio, you can smoothly pool these assets to
+            purchase an NFT priced at 6 ETH, all through one intuitive platform.
           </Typography>
-          <Typography gutterBottom my={2} className="font-roboto text-slate-800">
-            CrossUniFT dismantles the barriers between blockchain networks, offering users a cohesive and efficient
-            solution for buying NFTs, no matter the mainnet they belong to. Embrace the power of true cross-chain
-            unification, and explore limitless opportunities in the NFT realm with CrossUniFT!
+          <Typography
+            gutterBottom
+            my={2}
+            className="font-roboto text-slate-800"
+          >
+            Accio dismantles the barriers between blockchain networks, offering
+            users a cohesive and efficient solution for buying NFTs, no matter
+            the mainnet they belong to. Embrace the power of true cross-chain
+            unification, and explore limitless opportunities in the NFT realm
+            with Accio!
           </Typography>
         </DialogContent>
         <DialogActions>
