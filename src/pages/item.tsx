@@ -51,10 +51,7 @@ const useLAContract = (address: Address) => {
 
   useEffect(() => {
     if (address && provider) {
-      const contractInstance = LiquidityAggregator__factory.connect(
-        address,
-        provider
-      );
+      const contractInstance = LiquidityAggregator__factory.connect(address, provider);
       setContract(contractInstance);
     }
   }, [address, provider]);
@@ -89,18 +86,26 @@ const ItemPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
-  const wETHContract = useTokenContract(
-    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
-  );
-  const LAContract = useLAContract("0xLAContractAddress");
+  // TODO : Hardcoded linea address
+  const wETHContractPoly = useTokenContract("0xa4a20E5ce59C7672A6fbb254934477D58F3dD716");
+  const wETHContractLinea = useTokenContract("0x5e5b4ac1991818bDdAE5913D7193595914567f9a");
+  const LAContract = useLAContract("0x9f8bFAbbeEe0492019698E61E894Fec46E030a83");
   const { chain } = useNetwork();
-  const {
-    chains,
-    error,
-    isLoading: chainSwitchIsLoading,
-    pendingChainId,
-    switchNetwork,
-  } = useSwitchNetwork();
+  const { isLoading: chainSwitchIsLoadingLinea, switchNetwork: switchNetworkToLinea } = useSwitchNetwork({
+    chainId: 59140,
+    onSuccess(data: any) {
+      console.log("Success", data);
+      handleSwitchNetworkSuccessLinea(data);
+    },
+  });
+
+  const { isLoading: chainSwitchIsLoadingMumbai, switchNetwork: switchNetworkToMumbai } = useSwitchNetwork({
+    chainId: 80001,
+    onSuccess(data: any) {
+      console.log("Success", data);
+      handleSwitchNetworkSuccessMumbai(data);
+    },
+  });
 
   const [txHistory, setTxHistory] = useState<latestTx[] | null>();
   const [osData, setOsData] = useState<openseaData | null>();
@@ -119,18 +124,54 @@ const ItemPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleApproveButtonClick = async () => {
-    // alert("You have approved this item!");
-    if (wETHContract && !isError && !isLoading && signer && chain) {
+  const handleSwitchNetworkSuccessLinea = async (data: any) => {
+    if (wETHContractLinea && !isError && !isLoading && signer && chain) {
       try {
         // TODO : switch network to mainnet
-        if (chain.id !== 1 && switchNetwork) {
-          switchNetwork(1);
+        await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+      } catch (e) {
+        console.log("error");
+      }
+    }
+  };
+
+  const handleSwitchNetworkSuccessMumbai = async (data: any) => {
+    if (wETHContractPoly && !isError && !isLoading && signer && chain) {
+      try {
+        // TODO : switch network to mainnet
+        await wETHContractPoly.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+      } catch (e) {
+        console.log("error");
+      }
+    }
+  };
+
+  const handleApproveButtonClickMumbai = async () => {
+    if (wETHContractPoly && !isError && !isLoading && signer && chain) {
+      try {
+        // TODO : switch network to mainnet
+        console.log(chain.id);
+        if (chain.id !== 80001 && switchNetworkToMumbai) {
+          await switchNetworkToMumbai();
+        }
+      } catch (e) {
+        console.log("error");
+      }
+    }
+  };
+
+  const handleApproveButtonClickLinea = async () => {
+    // alert("You have approved this item!");
+    if (wETHContractLinea && !isError && !isLoading && signer && chain) {
+      try {
+        // TODO : switch network to mainnet
+        console.log(chain.id);
+        console.log("linea");
+        if (chain.id !== 59140 && switchNetworkToLinea) {
+          await switchNetworkToLinea();
         }
 
-        await wETHContract
-          .connect(signer)
-          .approve(await signer.getAddress(), ethers.constants.MaxUint256);
+        await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
       } catch (e) {
         console.log("error");
       }
@@ -184,14 +225,11 @@ const ItemPage: React.FC = () => {
     setInitLoading(true);
     const options = { method: "GET" };
     try {
-      const res = await axios.get(
-        `https://api.opensea.io/api/v1/collection/${slug}`,
-        options
-      );
+      const res = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}`, options);
       const result = res.data;
       setOsData(result.collection);
-    } catch {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
       setOsData(null);
     }
     setInitLoading(false);
@@ -236,22 +274,14 @@ const ItemPage: React.FC = () => {
             <>
               <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
                 <Image
-                  src={
-                    osData?.banner_image_url
-                      ? osData.banner_image_url
-                      : "/img/defaultBanner.jpg"
-                  }
+                  src={osData?.banner_image_url ? osData.banner_image_url : "/img/defaultBanner.jpg"}
                   width={400}
                   height={200}
                   className="w-full"
                   alt="BannerImg"
                 />
               </div>
-              <Grid
-                container
-                item
-                className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white"
-              >
+              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
@@ -259,45 +289,28 @@ const ItemPage: React.FC = () => {
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-pink-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
                           MarketCap : {osData?.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-green-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
                           Average : {osData?.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-blue-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
                           Floor : {osData?.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
                   <Typography className="m-2 p-5 h-32 overflow-y-scroll">
-                    {osData?.description
-                      ? osData.description
-                      : "description not found."}
+                    {osData?.description ? osData.description : "description not found."}
                   </Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
-                  {/* { !txHistory &&
+                  {/* { !txHistory && 
                   <div className="absolute left-0 top-0 bg-slate-600 w-full h-72 bg-opacity-30 rounded-lg flex items-center justify-center">
                     Sorry. We currently only support Ethereum.
                   </div>
@@ -315,13 +328,7 @@ const ItemPage: React.FC = () => {
                     height: "60vh",
                   }}
                 >
-                  <Grid
-                    container
-                    item
-                    alignItems="top"
-                    spacing={4}
-                    padding={10}
-                  >
+                  <Grid container item alignItems="top" spacing={4} padding={10}>
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
                         <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
@@ -335,12 +342,8 @@ const ItemPage: React.FC = () => {
                             }}
                             className="w-[12vh] aspect-square mb-4"
                           />
-                          <Typography className="font-medium text-lg">
-                            {item.name}
-                          </Typography>
-                          <Typography className="font-medium text-lg mt-2">
-                            {item.price.toFixed(2)} ETH
-                          </Typography>
+                          <Typography className="font-medium text-lg">{item.name}</Typography>
+                          <Typography className="font-medium text-lg mt-2">{item.price.toFixed(2)} wETH</Typography>
                           <Grid item>
                             <Button
                               variant="contained"
@@ -418,16 +421,11 @@ const ItemPage: React.FC = () => {
                           </Typography>
 
                           <Grid container direction="row" alignItems="center">
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
                               <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={handleApproveButtonClick}
+                                onClick={handleApproveButtonClickMumbai}
                                 style={{
                                   backgroundColor: "#1e90ff",
                                   alignSelf: "center",
@@ -438,16 +436,11 @@ const ItemPage: React.FC = () => {
                                 Approve on Polygon
                               </Button>
                             </Grid>
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
                               <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={handleBuyButtonClick}
+                                onClick={handleApproveButtonClickLinea}
                                 style={{
                                   backgroundColor: "#1e90ff",
                                   alignSelf: "center",
@@ -455,37 +448,7 @@ const ItemPage: React.FC = () => {
                                   padding: "0.4rem 1rem",
                                 }}
                               >
-                                Approve on Eth
-                              </Button>
-                            </Grid>
-                            <Grid item xs={6} className="flex justify-center">
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleApproveButtonClick}
-                                style={{
-                                  backgroundColor: "#1e90ff",
-                                  alignSelf: "center",
-                                  fontSize: "1rem",
-                                  padding: "0.4rem 1rem",
-                                }}
-                              >
-                                Approve on Polygon
-                              </Button>
-                            </Grid>
-                            <Grid item xs={6} className="flex justify-center">
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleBuyButtonClick}
-                                style={{
-                                  backgroundColor: "#1e90ff",
-                                  alignSelf: "center",
-                                  fontSize: "1rem",
-                                  padding: "0.4rem 1rem",
-                                }}
-                              >
-                                Approve on Eth
+                                Approve on Linea
                               </Button>
                             </Grid>
                           </Grid>

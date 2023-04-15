@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@1inch/fusion-sdk": "^0.1.1",
     "@badrap/bar-of-progress": "^0.2.2",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -36,7 +37,8 @@
     "react-dom": "18.2.0",
     "react-scroll": "^1.8.9",
     "typescript": "5.0.2",
-    "wagmi": "^0.12.6"
+    "wagmi": "^0.12.6",
+    "web3": "^1.9.0"
   },
   "devDependencies": {
     "@types/luxon": "^3.3.0",

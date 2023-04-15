@@ -1,11 +1,13 @@
-import { useState, useContext } from "react";
-import { Container } from "@mui/material";
+import { useState, useContext, ChangeEvent } from "react";
+import { Container, Button, TextField } from "@mui/material";
 import { Crypto } from "../config/types";
 import TitleManager from "@/components/common/TitleManager";
 import MyAsset from "@/components/myAssets/MyAsset";
 import CollectionsList from "@/components/nftCollections/CollectionsList";
 import { balanceContext } from "../hooks/balanceContext";
 import ExpandCircleDownIcon from "@mui/icons-material/ExpandCircleDown";
+import { FusionSDK, PrivateKeyProviderConnector } from "@1inch/fusion-sdk";
+import web3 from "web3";
 
 export default function Home() {
   const [dropDownStatus, setDropDownStatus] = useState<boolean>(true);
@@ -13,14 +15,24 @@ export default function Home() {
     useContext(balanceContext);
 
   const cryptoList: Crypto[] = [
+    // mainnet
     {
       name: "Ethereum",
       fileName: "eth",
       symbol: "ETH",
       chainId: 1,
-      usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
+    // goerli
+    // {
+    //   name: "Ethereum",
+    //   fileName: "eth",
+    //   symbol: "ETH",
+    //   chainId: 5,
+    //   usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    //   wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    // },
     {
       name: "Polygon",
       fileName: "matic",
@@ -43,7 +55,7 @@ export default function Home() {
       symbol: "LineaETH",
       chainId: 59140,
       usdc: "0x964FF70695da981027c81020B1c58d833D49A640",
-      wETH: "0x2C1b868d6596a18e32E61B901E4060C872647b6C",
+      wETH: "0x5e5b4ac1991818bDdAE5913D7193595914567f9a",
     },
   ];
 
@@ -64,6 +76,65 @@ export default function Home() {
     );
     setTotalBalance(totbal);
   };
+
+  const handleInputChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    crypto: Crypto
+  ) => {
+    // Handle the input change here, using the passed crypto object
+    console.log(event.target.value, crypto);
+  };
+
+  const handleButtonClick = (crypto: Crypto) => {
+    // Handle the button click here, using the passed crypto object
+    // const blockchainProvider = new PrivateKeyProviderConnector(
+    //   "0x00",
+    //   new web3(nodeURL)
+    // );
+    // console.log(crypto);
+    // const sdk = new FusionSDK({
+    //   url: "https://fusion.1inch.io",
+    //   network: crypto.chainId,
+    //   blockchainProvider,
+    // });
+    // console.log(sdk);
+    // sdk
+    //   .placeOrder({
+    //     fromTokenAddress: crypto.usdc, // bnb busd "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+    //     toTokenAddress: crypto.wETH, // bnb eth "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+    //     amount: "54300000000000000000", // 0.01 native token
+    //     walletAddress: address,
+    //     fee: {
+    //       takingFeeBps: 100, // 1% as we use bps format, 1% is equal to 100bps
+    //       takingFeeReceiver: "0x0000000000000000000000000000000000000000", //  fee receiver address
+    //     },
+    //   })
+    //   .then(console.log);
+  };
+
+  // const handleSwapUSDCTowETH = (crypto: Crypto) => {
+  //   const blockchainProvider = new PrivateKeyProviderConnector(
+  //     "0x1e7fb82322ba55ea8b81c1dabefd8679c81595280f2e10ae7e0f41df85d1cb36",
+  //     new web3(nodeURL)
+  //   );
+
+  //   const sdk = new FusionSDK({
+  //     url: "https://fusion.1inch.io",
+  //     network: crypto.chainId,
+  //     blockchainProvider,
+  //   });
+
+  //   console.log(sdk);
+
+  //   sdk
+  //     .placeOrder({
+  //       fromTokenAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // native
+  //       toTokenAddress: "0xc38315264475f2aa4e8ac09e0433ba40705acd9b", // wETH
+  //       amount: "1000000000000000000", // 0.01 native token
+  //       walletAddress: address,
+  //     })
+  //     .then(console.log);
+  // };
 
   const seo = {
     pageTitle: "home",
@@ -95,7 +166,29 @@ export default function Home() {
                   onBalanceUpdate={handleBalanceUpdate}
                 />
               ))}
-              <div className="h-40">testtesttest</div>
+              {cryptoList.map((crypto, idx) => (
+                <div
+                  key={crypto.name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <TextField
+                    variant="outlined"
+                    size="small"
+                    style={{ marginRight: "8px" }}
+                    onChange={(event: any) => handleInputChange(event, crypto)}
+                  />
+                  <button
+                    className=" bg-gradient-to-tr from-slate-200 to-white rounded-lg border border-slate-500 text-sm"
+                    onClick={() => handleButtonClick(crypto)}
+                  >
+                    USDC to wETH
+                  </button>
+                </div>
+              ))}
             </div>
           )}
           <div

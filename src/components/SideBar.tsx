@@ -120,9 +120,9 @@ export default function SideBar() {
             >
               <Image
                 src="/img/accio.png"
-                width={600}
-                height={200}
-                className="aspect-auto w-60 hover:scale-110 duration-300"
+                width={250}
+                height={100}
+                className=" aspect-auto w-40 hover:scale-110 duration-300"
                 alt="logo"
                 priority={true}
               />
