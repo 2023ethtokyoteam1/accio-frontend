@@ -186,8 +186,6 @@ const ItemPage: React.FC = () => {
     if (colAddress) {
       try {
         const response = await axios.post("/api/latestTx", { colAddress });
-        console.log("ddddd");
-        console.log(response.data);
 
         const data = response.data.map((d: any) => ({
           x: DateTime.fromISO(d.blockTimestamp.substring(0, 10)),
