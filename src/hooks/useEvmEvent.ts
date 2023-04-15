@@ -21,21 +21,23 @@ export const useEvmEvent = ({
   pollingInterval = 5000,
 }: EvmEventOptions): UseQueryResult<ethers.utils.LogDescription[], Error> => {
   const provider = useProvider({ chainId });
-  const [eventList, setEventList] = useState<ethers.utils.LogDescription[]>([]);
 
   const fetchEvent = async () => {
     if (!provider) return;
 
     const contract = new ethers.Contract(contractAddress, abi, provider);
     const filter = contract.filters[eventName]();
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = Math.max(currentBlock - 1000, 0); // Ensure the fromBlock is not negative
     const eventLogs = await provider.getLogs({
       ...filter,
-      fromBlock: 0,
+      fromBlock: fromBlock,
       toBlock: "latest",
     });
 
     const parsedEvents = eventLogs.map((log: any) => contract.interface.parseLog(log));
-    setEventList(parsedEvents);
+    console.log("Fetched event:", eventName, parsedEvents);
+    return parsedEvents;
   };
 
   return useQuery(`evmEvent_${eventName}`, fetchEvent, {

@@ -7,7 +7,7 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import TitleManager from "@/components/common/TitleManager";
 import axios from "axios";
-import { ethers, providers } from "ethers";
+import { BigNumber, ethers, providers } from "ethers";
 import { ERC20, ERC20__factory } from "../typechain";
 import { Address, useProvider, useSigner } from "wagmi";
 import { useNetwork, useSwitchNetwork } from "wagmi";
@@ -19,12 +19,12 @@ import Tooltip from "@mui/material/Tooltip";
 import { lineaGoerliTestnet } from "@/config/chains";
 import { deployedContracts } from "@/config/deployed_contracts";
 import LiquidityAggregator from "../abis/ILiquidityAggregator.json";
+import NFTMarket from "../abis/INFTMarket.json";
 import LinkedSliders from "../components/LinkedSliders";
 import SimpleModal from "../components/SimpleModal";
 import { useEvmEvent } from "@/hooks/useEvmEvent";
 import { goerli, polygonMumbai } from "wagmi/chains";
 import TransitionLoading from "@/components/common/TransitionLoading";
-// import TransitionLoading from "../components/common/TransitionLoading";
 
 interface Item {
   id: number;
@@ -67,12 +67,11 @@ const ItemPage: React.FC = () => {
 
   const [initLoading, setInitLoading] = useState<boolean>(false);
   const [items, setItems] = useState<Item[]>([]);
+  const [requsetedId, setRequestedId] = useState<number>(0);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [stepStatus, setStepStatus] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<number>(0);
-  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] =
-    useState<boolean>(false);
+  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] = useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
   // TODO : Hardcoded linea address
   const wETHContractMumbai = useTokenContract(deployedContracts.mumbai.weth);
@@ -81,13 +80,10 @@ const ItemPage: React.FC = () => {
   // const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/")
 
   // Linea LiquidityAggregator#buy BuyMessageDispatched
-  // Mumbai LiquidityAggregator#handle DispatchWithTokensMessageDispatched
-  // Linea LiquidityAggregator#handleWithTokens FundFulfilled
-  // Linea NFTMarket#buyNFT NFTSold
   const {
     data: laBuyEventList,
-    refetch,
-    error,
+    refetch: laBuyEventRefetch,
+    error: laBuyEventError,
   } = useEvmEvent({
     chainId: lineaGoerliTestnet.id,
     contractAddress: deployedContracts.linea.liquidity_aggregator,
@@ -95,24 +91,103 @@ const ItemPage: React.FC = () => {
     eventName: "BuyMessageDispatched",
   });
 
+  // Mumbai LiquidityAggregator#handle DispatchWithTokensMessageDispatched
+  const {
+    data: laHandleEventList,
+    refetch: laHandleEventRefetch,
+    error: laHandleEventError,
+  } = useEvmEvent({
+    chainId: polygonMumbai.id,
+    contractAddress: deployedContracts.mumbai.liquidity_aggregator,
+    abi: LiquidityAggregator.abi,
+    eventName: "DispatchWithTokensMessageDispatched",
+  });
+
+  // Linea LiquidityAggregator#handleWithTokens FundFulfilled
+  const {
+    data: laHandleWithTokensEventList,
+    refetch: laHandleWithTokensEventRefetch,
+    error: laHandleWithTokensEventError,
+  } = useEvmEvent({
+    chainId: lineaGoerliTestnet.id,
+    contractAddress: deployedContracts.linea.liquidity_aggregator,
+    abi: LiquidityAggregator.abi,
+    eventName: "FundFulfilled",
+  });
+
+  // Linea NFTMarket#buyNFT NFTSold
+  const {
+    data: marketBuyNFTEventList,
+    refetch: marketBuyNFTRefetch,
+    error: marketBuyNFTError,
+  } = useEvmEvent({
+    chainId: lineaGoerliTestnet.id,
+    contractAddress: deployedContracts.linea.nft_market,
+    abi: NFTMarket.abi,
+    eventName: "NFTSold",
+  });
+
+  const [buyTxStatus, setBuyTxStatus] = useState(0);
+
   useEffect(() => {
-    if (laBuyEventList) {
-      console.log("laBuyEventList", laBuyEventList);
+    console.log("CurrentBuyStatus", buyTxStatus);
+    if (requsetedId !== 0 && buyTxStatus !== 4) {
+      try {
+        console.log("CurrentBuyStatus", buyTxStatus);
+        if (laHandleEventList) {
+          for (const singleEvent of laHandleEventList) {
+            const reqId = singleEvent.args[0].toNumber();
+            console.log("reqId", reqId);
+            console.log("requsetedId", requsetedId);
+            if (reqId === requsetedId) {
+              console.log("handle success", laHandleEventList);
+              setBuyTxStatus(2);
+            }
+          }
+        }
+
+        if (laHandleWithTokensEventList) {
+          for (const singleEvent of laHandleWithTokensEventList) {
+            const reqId: number = singleEvent.args[0].toNumber();
+            if (reqId === requsetedId) {
+              console.log("handleWithTokens success", laHandleWithTokensEventList);
+              setBuyTxStatus(3);
+            }
+          }
+        }
+
+        if (marketBuyNFTEventList && buyTxStatus === 3) {
+          for (const singleEvent of marketBuyNFTEventList) {
+            const nftId: number = singleEvent.args[0].toNumber();
+            if (nftId === selectedItem?.id) {
+              console.log("marketBuyNFT success", marketBuyNFTEventList);
+              setBuyTxStatus(4);
+            }
+          }
+        }
+      } catch (e) {
+        console.log(e);
+      }
     }
-  }, [laBuyEventList]);
+  }, [
+    buyTxStatus,
+    laBuyEventList,
+    laHandleEventList,
+    laHandleWithTokensEventList,
+    marketBuyNFTEventList,
+    requsetedId,
+    laBuyEventList?.length,
+    laHandleEventList?.length,
+    laHandleWithTokensEventList?.length,
+    marketBuyNFTEventList?.length,
+  ]);
 
   const { chain } = useNetwork();
-  const {
-    isLoading: chainSwitchIsLoadingLinea,
-    switchNetworkAsync: switchNetworkToLinea,
-  } = useSwitchNetwork({
+  const { isLoading: chainSwitchIsLoadingLinea, switchNetworkAsync: switchNetworkToLinea } = useSwitchNetwork({
     chainId: lineaGoerliTestnet.id,
   });
 
-  const {
-    isLoading: chainSwitchIsLoadingMumbai,
-    switchNetworkAsync: switchNetworkToMumbai,
-  } = useSwitchNetwork({
+  const { isLoading: chainSwitchIsLoadingMumbai, switchNetworkAsync: switchNetworkToMumbai } = useSwitchNetwork({
     chainId: polygonMumbai.id,
   });
 
@@ -120,18 +195,20 @@ const ItemPage: React.FC = () => {
   const [osData, setOsData] = useState<openseaData | null>();
 
   const handleBuyButtonClick = async () => {
-    const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: 0 };
+    setInitLoading(true);
+
+    const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: selectedItem?.id };
 
     const funds = [
       {
         chainId: lineaGoerliTestnet.id,
         localWeth: deployedContracts.linea.weth,
-        localWethAmount: 500_000_000_000,
+        localWethAmount: ethers.utils.parseEther("0.5"),
       },
       {
         chainId: polygonMumbai.id,
         localWeth: deployedContracts.mumbai.hyp_weth,
-        localWethAmount: 500_000_000_000,
+        localWethAmount: ethers.utils.parseEther("0.5"),
       },
     ];
     if (signer && provider) {
@@ -142,9 +219,27 @@ const ItemPage: React.FC = () => {
       );
 
       try {
-        await LAContract.connect(signer).buy(nftInfo, funds);
+        const tx = await LAContract.connect(signer).buy(nftInfo, funds);
+        await tx.wait();
+
+        const filter = LAContract.filters["BuyMessageDispatched"]();
+        const currentBlock = await provider.getBlockNumber();
+        const fromBlock = Math.max(currentBlock - 100, 0); // Ensure the fromBlock is not negative
+        const eventLogs = await provider.getLogs({
+          ...filter,
+          fromBlock: fromBlock,
+          toBlock: "latest",
+        });
+
+        const parsedEvents = eventLogs.map((log: any) => LAContract.interface.parseLog(log));
+        const requestId = parsedEvents[parsedEvents.length - 1].args[0].toNumber();
+        setRequestedId(requestId);
+        setBuyTxStatus(1);
+        console.log("requestId", requestId);
+        setInitLoading(false);
       } catch (e) {
         console.log(e);
+        setInitLoading(false);
       }
     }
   };
@@ -163,10 +258,7 @@ const ItemPage: React.FC = () => {
     try {
       if (modalChainId === polygonMumbai.id && switchNetworkToMumbai) {
         await switchNetworkToMumbai();
-      } else if (
-        modalChainId === lineaGoerliTestnet.id &&
-        switchNetworkToLinea
-      ) {
+      } else if (modalChainId === lineaGoerliTestnet.id && switchNetworkToLinea) {
         await switchNetworkToLinea();
       }
     } catch (e) {
@@ -190,10 +282,7 @@ const ItemPage: React.FC = () => {
           setModalChainId(polygonMumbai.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractMumbai
-            .connect(signer)
-            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
-          // setStepStatus(2);
+          await wETHContractMumbai.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
       } catch (e) {
         console.log(e);
@@ -208,10 +297,7 @@ const ItemPage: React.FC = () => {
           setModalChainId(lineaGoerliTestnet.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractLinea
-            .connect(signer)
-            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
-          // setStepStatus(3);
+          await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
       } catch (e) {
         console.log("error");
@@ -241,10 +327,10 @@ const ItemPage: React.FC = () => {
   };
 
   const steps = [
-    { id: 0, title: "Approve Mumbai" },
-    { id: 1, title: "Approve Linea" },
-    { id: 2, title: "ttt3" },
-    { id: 3, title: "Receive the NFT" },
+    { id: 0, title: "Buy transaction confirmed" },
+    { id: 1, title: "Token message dispatched" },
+    { id: 2, title: "Fund Fullfilled" },
+    { id: 3, title: "NFT Recieved" },
   ];
 
   useEffect(() => {
@@ -267,16 +353,13 @@ const ItemPage: React.FC = () => {
       setItems(items);
     };
     fetchItems();
-  }, [isModalOpen]);
+  }, [colName, isModalOpen, mainnet, slug]);
 
   const fetchOsData = async () => {
     setInitLoading(true);
     const options = { method: "GET" };
     try {
-      const res = await axios.get(
-        `https://api.opensea.io/api/v1/collection/${slug}`,
-        options
-      );
+      const res = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}`, options);
       const result = res.data;
       setOsData(result.collection);
     } catch (e) {
@@ -350,22 +433,14 @@ const ItemPage: React.FC = () => {
             <>
               <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
                 <Image
-                  src={
-                    osData?.banner_image_url
-                      ? osData.banner_image_url
-                      : "/img/defaultBanner.jpg"
-                  }
+                  src={osData?.banner_image_url ? osData.banner_image_url : "/img/defaultBanner.jpg"}
                   width={400}
                   height={200}
                   className="w-full"
                   alt="BannerImg"
                 />
               </div>
-              <Grid
-                container
-                item
-                className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white"
-              >
+              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
@@ -373,41 +448,24 @@ const ItemPage: React.FC = () => {
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-pink-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
                           MarketCap : {osData?.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-green-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
                           Average : {osData?.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button
-                          variant="contained"
-                          className="px-3 bg-blue-400"
-                          size="small"
-                          aria-label="add"
-                        >
+                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
                           Floor : {osData?.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
                   <Typography className="m-2 p-5 h-32 overflow-y-scroll">
-                    {osData?.description
-                      ? osData.description
-                      : "description not found."}
+                    {osData?.description ? osData.description : "description not found."}
                   </Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
@@ -429,13 +487,7 @@ const ItemPage: React.FC = () => {
                     height: "60vh",
                   }}
                 >
-                  <Grid
-                    container
-                    item
-                    alignItems="top"
-                    spacing={4}
-                    padding={10}
-                  >
+                  <Grid container item alignItems="top" spacing={4} padding={10}>
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
                         <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
@@ -449,12 +501,8 @@ const ItemPage: React.FC = () => {
                             }}
                             className="w-[12vh] aspect-square mb-4"
                           />
-                          <Typography className="font-medium text-lg">
-                            {item.name}
-                          </Typography>
-                          <Typography className="font-medium text-lg mt-2">
-                            {item.price.toFixed(2)} wETH
-                          </Typography>
+                          <Typography className="font-medium text-lg">{item.name}</Typography>
+                          <Typography className="font-medium text-lg mt-2">{item.price.toFixed(2)} wETH</Typography>
                           <Grid item>
                             <Button
                               variant="contained"
@@ -526,29 +574,13 @@ const ItemPage: React.FC = () => {
                           }}
                         >
                           <Grid container direction="row" alignItems="center">
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
-                              <Typography
-                                variant="h5"
-                                className="font-medium mb-1"
-                              >
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                              <Typography variant="h5" className="font-medium mb-1">
                                 {selectedItem.name}
                               </Typography>
                             </Grid>
-                            <Grid
-                              item
-                              xs={6}
-                              marginBottom={2}
-                              className="flex justify-center"
-                            >
-                              <Typography
-                                variant="h5"
-                                className="font-medium mb-1"
-                              >
+                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                              <Typography variant="h5" className="font-medium mb-1">
                                 {selectedItem.price.toFixed(2)} wETH
                               </Typography>
                             </Grid>
@@ -581,7 +613,7 @@ const ItemPage: React.FC = () => {
                             }}
                           >
                             <Grid container direction="row" alignItems="center">
-                              <Grid item xs={6} className="flex justify-center">
+                              <Grid item xs={6} marginBottom={2} className="flex justify-center">
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -596,7 +628,7 @@ const ItemPage: React.FC = () => {
                                   Approve on Mumbai
                                 </Button>
                               </Grid>
-                              <Grid item xs={6} className="flex justify-center">
+                              <Grid item xs={6} marginBottom={2} className="flex justify-center">
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -611,11 +643,17 @@ const ItemPage: React.FC = () => {
                                   Approve on Linea
                                 </Button>
                               </Grid>
-                              <Grid
-                                item
-                                xs={12}
-                                className="flex justify-center"
-                              >
+                              <Grid item xs={6} className="flex justify-center">
+                                <Typography variant="h5" className="font-medium mb-1">
+                                  0.5 wETH from Mumbai
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={6} className="flex justify-center">
+                                <Typography variant="h5" className="font-medium mb-1">
+                                  0.5 wETH from Linea
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={12} className="flex justify-center">
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -638,20 +676,10 @@ const ItemPage: React.FC = () => {
                     )}
                     <div>
                       <div className="absolute flex rounded-lg outline-none justify-between p-10 mt-20 bg-white w-[800px]">
-                        <Stepper
-                          activeStep={stepStatus}
-                          alternativeLabel
-                          className="w-full"
-                        >
+                        <Stepper activeStep={buyTxStatus} alternativeLabel className="w-full">
                           {steps.map((label: Steps, idx: number) => (
                             <Step className="" key={label.id}>
-                              <StepLabel
-                                className={`${
-                                  stepStatus == label.id
-                                    ? "animate-pulse"
-                                    : null
-                                }`}
-                              >
+                              <StepLabel className={`${buyTxStatus == label.id ? "animate-pulse" : null}`}>
                                 <span>{label.title}</span>
                               </StepLabel>
                               {/* <Button

@@ -26,7 +26,7 @@ export default function Home() {
     // },
     // goerli
     {
-      name: "Ethereum",
+      name: "Goerli",
       fileName: "eth",
       symbol: "ETH",
       chainId: 5,
@@ -34,12 +34,12 @@ export default function Home() {
       wETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
     {
-      name: "Polygon",
+      name: "Mumbai",
       fileName: "matic",
       symbol: "MATIC",
-      chainId: 137,
-      usdc: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-      wETH: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+      chainId: 80001,
+      usdc: "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
+      wETH: "0xabaaF2a2bd9a546efa4D5e88375EbeEB4438D38c",
     },
     {
       name: "Optimism",
@@ -55,7 +55,7 @@ export default function Home() {
       symbol: "LineaETH",
       chainId: 59140,
       usdc: "0x964FF70695da981027c81020B1c58d833D49A640",
-      wETH: "0x5e5b4ac1991818bDdAE5913D7193595914567f9a",
+      wETH: "0x8c2b9C7528391EB04348A1698AA57f324553E5EF",
     },
   ];
 

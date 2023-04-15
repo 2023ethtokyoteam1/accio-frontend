@@ -15,11 +15,7 @@ interface CryptoIconProps {
 
 const tokens = ["0x0"];
 
-function useBalanceHook(
-  address: Address | undefined,
-  chainId?: number | undefined,
-  token?: Address | undefined
-) {
+function useBalanceHook(address: Address | undefined, chainId?: number | undefined, token?: Address | undefined) {
   const { data, isSuccess } = useBalance({
     address: address,
     chainId: chainId,
@@ -27,11 +23,7 @@ function useBalanceHook(
   });
 
   return {
-    data: data
-      ? utils
-          .formatUnits(data.value, data.decimals === 6 ? "szabo" : "ether")
-          .slice(0, 5)
-      : undefined,
+    data: data ? utils.formatUnits(data.value, data.decimals === 6 ? "szabo" : "ether").slice(0, 5) : undefined,
     isSuccess,
   };
 }
@@ -56,27 +48,13 @@ const MyAsset: React.FC<CryptoIconProps> = ({ crypto, onBalanceUpdate }) => {
   const isMounted = useIsMounted();
 
   const [iconColor, setIconColor] = useState("black");
-  const [selected, setSelected] = useLocalStorageState(
-    "selected" + crypto.name,
-    false
-  );
+  const [selected, setSelected] = useLocalStorageState("selected" + crypto.name, false);
   const { address, connector, isConnected } = useAccount();
   // const [balUSD, setBalUSD] = useState(0);
   const [balwETH, setBalwETH] = useState(0);
-  const { data: nativeBalance, isSuccess: nativeSuccess } = useBalanceHook(
-    address,
-    crypto.chainId
-  );
-  const { data: usdcBalance, isSuccess: usdcSuccess } = useBalanceHook(
-    address,
-    crypto.chainId,
-    crypto.usdc
-  );
-  const { data: wETHBalance, isSuccess: wETHSuccess } = useBalanceHook(
-    address,
-    crypto.chainId,
-    crypto.wETH
-  );
+  const { data: nativeBalance, isSuccess: nativeSuccess } = useBalanceHook(address, crypto.chainId);
+  const { data: usdcBalance, isSuccess: usdcSuccess } = useBalanceHook(address, crypto.chainId, crypto.usdc);
+  const { data: wETHBalance, isSuccess: wETHSuccess } = useBalanceHook(address, crypto.chainId, crypto.wETH);
 
   const nativeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
   const amount = "1000000";
@@ -109,35 +87,33 @@ const MyAsset: React.FC<CryptoIconProps> = ({ crypto, onBalanceUpdate }) => {
   };
 
   useEffect(() => {
-    if (
-      usdcSuccess &&
-      nativeSuccess &&
-      wETHSuccess &&
-      !usdcLoading &&
-      !usdcError &&
-      !nativeLoading &&
-      !nativeError
-    ) {
-      const calcBalwETH =
-        Number(nativeBalance) / Number(nativeData.toTokenAmount) +
-        Number(wETHBalance) +
-        Number(usdcBalance) / Number(usdcData.toTokenAmount);
-
-      console.log(nativeBalance);
-      console.log(Number(nativeBalance) / Number(nativeData.toTokenAmount));
-      console.log(wETHBalance);
-      console.log(usdcBalance);
-      console.log(Number(usdcBalance) / Number(usdcData.toTokenAmount));
-      console.log(calcBalwETH);
+    if (wETHBalance) {
+      const calcBalwETH = Number(wETHBalance);
 
       setBalwETH(calcBalwETH);
       onBalanceUpdate(crypto.name, calcBalwETH, selected);
     }
+
+    // DISABLE AT TESTNET
+    // if (usdcSuccess && nativeSuccess && wETHSuccess && !usdcLoading && !usdcError && !nativeLoading && !nativeError) {
+    //   const calcBalwETH =
+    //     Number(nativeBalance) / Number(nativeData.toTokenAmount) +
+    //     Number(wETHBalance) +
+    //     Number(usdcBalance) / Number(usdcData.toTokenAmount);
+
+    //   console.log(nativeBalance);
+    //   console.log(Number(nativeBalance) / Number(nativeData.toTokenAmount));
+    //   console.log(wETHBalance);
+    //   console.log(usdcBalance);
+    //   console.log(Number(usdcBalance) / Number(usdcData.toTokenAmount));
+    //   console.log(calcBalwETH);
+
+    //   setBalwETH(calcBalwETH);
+    //   onBalanceUpdate(crypto.name, calcBalwETH, selected);
+    // }
   }, [usdcSuccess, nativeSuccess, wETHSuccess, selected, usdcLoading, usdcError, nativeLoading, nativeError]);
 
-  const imagePath = `/img/crypto/${selected ? "color" : "black"}/${
-    crypto.fileName
-  }.png`;
+  const imagePath = `/img/crypto/${selected ? "color" : "black"}/${crypto.fileName}.png`;
 
   if (!isMounted) {
     return null;
@@ -157,13 +133,7 @@ const MyAsset: React.FC<CryptoIconProps> = ({ crypto, onBalanceUpdate }) => {
       animate={selected ? { scale: 1.05, y: -5 } : {}}
     >
       <div className="mb-10 lg:mb-20 m-3 px-auto text-center text-xs ">
-        <Image
-          src={imagePath}
-          alt={crypto.name}
-          width={300}
-          height={300}
-          className="w-16 aspect-square"
-        />
+        <Image src={imagePath} alt={crypto.name} width={300} height={300} className="w-16 aspect-square" />
         {/* <div> {crypto.symbol}</div> */}
       </div>
       <div className="ml-1 relative w-full">
@@ -180,9 +150,7 @@ const MyAsset: React.FC<CryptoIconProps> = ({ crypto, onBalanceUpdate }) => {
               </span>
               <span className="text-xs">{wETHBalance} wETH</span>
               <span className="text-xs">{usdcBalance} USDC</span>
-              <span className="text-xs font-bold">
-                {balwETH.toFixed(3)} wETH
-              </span>
+              <span className="text-xs font-bold">{balwETH.toFixed(3)} wETH</span>
             </>
           ) : (
             <>
@@ -192,11 +160,7 @@ const MyAsset: React.FC<CryptoIconProps> = ({ crypto, onBalanceUpdate }) => {
         </div>
       </div>
 
-      {selected && (
-        <div className="absolute right-2 top-2 text-[#4CAF50] font-pop text-xs font-semibold">
-          selected
-        </div>
-      )}
+      {selected && <div className="absolute right-2 top-2 text-[#4CAF50] font-pop text-xs font-semibold">selected</div>}
     </motion.div>
   );
 };
