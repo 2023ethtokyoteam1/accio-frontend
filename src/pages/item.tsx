@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { Grid, Typography, Modal, Button, Container, Theme, TextField } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Modal,
+  Button,
+  Container,
+  Theme,
+  TextField,
+} from "@mui/material";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -73,7 +81,8 @@ const ItemPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<number>(0);
-  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] = useState<boolean>(false);
+  const [isNetworkChangeModalOpen, setIsNetworkChangeModalOpen] =
+    useState<boolean>(false);
   const { data: signer, isError, isLoading } = useSigner();
   // TODO : Hardcoded linea address
   const wETHContractMumbai = useTokenContract(deployedContracts.mumbai.weth);
@@ -158,17 +167,22 @@ const ItemPage: React.FC = () => {
         }
 
         if (laHandleWithTokensEventList && buyTxStatus == 2) {
-          const singleEvent = laHandleWithTokensEventList[laHandleWithTokensEventList.length - 1];
+          const singleEvent =
+            laHandleWithTokensEventList[laHandleWithTokensEventList.length - 1];
 
           const reqId: number = singleEvent.args[0].toNumber();
           if (reqId === requsetedId) {
-            console.log("handleWithTokens success", laHandleWithTokensEventList);
+            console.log(
+              "handleWithTokens success",
+              laHandleWithTokensEventList
+            );
             setBuyTxStatus(3);
           }
         }
 
         if (marketBuyNFTEventList && buyTxStatus === 3 && selectedItem) {
-          const singleEvent = marketBuyNFTEventList[marketBuyNFTEventList.length - 1];
+          const singleEvent =
+            marketBuyNFTEventList[marketBuyNFTEventList.length - 1];
 
           const nftId: number = singleEvent.args[0].toNumber();
           console.log(nftId);
@@ -196,11 +210,17 @@ const ItemPage: React.FC = () => {
   ]);
 
   const { chain } = useNetwork();
-  const { isLoading: chainSwitchIsLoadingLinea, switchNetworkAsync: switchNetworkToLinea } = useSwitchNetwork({
+  const {
+    isLoading: chainSwitchIsLoadingLinea,
+    switchNetworkAsync: switchNetworkToLinea,
+  } = useSwitchNetwork({
     chainId: lineaGoerliTestnet.id,
   });
 
-  const { isLoading: chainSwitchIsLoadingMumbai, switchNetworkAsync: switchNetworkToMumbai } = useSwitchNetwork({
+  const {
+    isLoading: chainSwitchIsLoadingMumbai,
+    switchNetworkAsync: switchNetworkToMumbai,
+  } = useSwitchNetwork({
     chainId: polygonMumbai.id,
   });
 
@@ -210,20 +230,24 @@ const ItemPage: React.FC = () => {
   const handleBuyButtonClick = async () => {
     setOpen(true);
 
-    const nftInfo = { nftContract: deployedContracts.linea.nft, nftId: selectedItem?.id };
+    const nftInfo = {
+      nftContract: deployedContracts.linea.nft,
+      nftId: selectedItem?.id,
+    };
 
     const funds = [
       {
         chainId: lineaGoerliTestnet.id,
         localWeth: deployedContracts.linea.weth,
-        localWethAmount: ethers.utils.parseEther("0.8"),
+        localWethAmount: ethers.utils.parseEther(sliderValue2.toString()),
       },
       {
         chainId: polygonMumbai.id,
         localWeth: deployedContracts.mumbai.hyp_weth,
-        localWethAmount: ethers.utils.parseEther("0.2"),
+        localWethAmount: ethers.utils.parseEther(sliderValue1.toString()),
       },
     ];
+
     if (signer && provider) {
       const LAContract = new ethers.Contract(
         (deployedContracts as any).linea.liquidity_aggregator,
@@ -244,8 +268,11 @@ const ItemPage: React.FC = () => {
           toBlock: "latest",
         });
 
-        const parsedEvents = eventLogs.map((log: any) => LAContract.interface.parseLog(log));
-        const requestId = parsedEvents[parsedEvents.length - 1].args[0].toNumber();
+        const parsedEvents = eventLogs.map((log: any) =>
+          LAContract.interface.parseLog(log)
+        );
+        const requestId =
+          parsedEvents[parsedEvents.length - 1].args[0].toNumber();
         setRequestedId(requestId);
         setBuyTxStatus(1);
         console.log("requestId", requestId);
@@ -271,7 +298,10 @@ const ItemPage: React.FC = () => {
     try {
       if (modalChainId === polygonMumbai.id && switchNetworkToMumbai) {
         await switchNetworkToMumbai();
-      } else if (modalChainId === lineaGoerliTestnet.id && switchNetworkToLinea) {
+      } else if (
+        modalChainId === lineaGoerliTestnet.id &&
+        switchNetworkToLinea
+      ) {
         await switchNetworkToLinea();
       }
     } catch (e) {
@@ -295,7 +325,9 @@ const ItemPage: React.FC = () => {
           setModalChainId(polygonMumbai.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractMumbai.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          await wETHContractMumbai
+            .connect(signer)
+            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
       } catch (e) {
         console.log(e);
@@ -310,7 +342,9 @@ const ItemPage: React.FC = () => {
           setModalChainId(lineaGoerliTestnet.id);
           setIsNetworkChangeModalOpen(true);
         } else {
-          await wETHContractLinea.connect(signer).approve(await signer.getAddress(), ethers.constants.MaxUint256);
+          await wETHContractLinea
+            .connect(signer)
+            .approve(await signer.getAddress(), ethers.constants.MaxUint256);
         }
       } catch (e) {
         console.log("error");
@@ -372,7 +406,10 @@ const ItemPage: React.FC = () => {
     setInitLoading(true);
     const options = { method: "GET" };
     try {
-      const res = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}`, options);
+      const res = await axios.get(
+        `https://api.opensea.io/api/v1/collection/${slug}`,
+        options
+      );
       const result = res.data;
       setOsData(result.collection);
     } catch (e) {
@@ -388,8 +425,16 @@ const ItemPage: React.FC = () => {
       try {
         const airStack_key = process.env.NEXT_PUBLIC_AIRSTACK_API_KEY;
         const options = { headers: { authorization: airStack_key } };
-        const response = await axios.post("/api/latestTx", { colAddress }, options);
-        const response2 = await axios.post("/api/collection", { colAddress }, options);
+        const response = await axios.post(
+          "/api/latestTx",
+          { colAddress },
+          options
+        );
+        const response2 = await axios.post(
+          "/api/collection",
+          { colAddress },
+          options
+        );
 
         console.log("MetaData", response2);
         console.log("tx", response);
@@ -413,8 +458,8 @@ const ItemPage: React.FC = () => {
   }, []);
 
   const maxValue = 1;
-  const [sliderValue1, setSliderValue1] = useState(0.2);
-  const [sliderValue2, setSliderValue2] = useState(0.8);
+  const [sliderValue1, setSliderValue1] = useState(0);
+  const [sliderValue2, setSliderValue2] = useState(0);
 
   const handleSlider1Change = (value: number) => {
     setSliderValue1(value);
@@ -447,14 +492,22 @@ const ItemPage: React.FC = () => {
             <>
               <div className="w-full absolute left-0 -top-20 overflow-hidden h-80">
                 <Image
-                  src={osData?.banner_image_url ? osData.banner_image_url : "/img/defaultBanner.jpg"}
+                  src={
+                    osData?.banner_image_url
+                      ? osData.banner_image_url
+                      : "/img/defaultBanner.jpg"
+                  }
                   width={400}
                   height={200}
                   className="w-full"
                   alt="BannerImg"
                 />
               </div>
-              <Grid container item className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white">
+              <Grid
+                container
+                item
+                className="mt-10 mx-10 rounded-t-lg z-10 h-60 bg-white"
+              >
                 <Grid item xs={7} className="mt-5 pl-5">
                   <div className="">
                     <Typography className=" font-bold text-[50px] text-slate-500 leading-[60px]">
@@ -462,24 +515,39 @@ const ItemPage: React.FC = () => {
                     </Typography>
                     <div className="flex gap-5">
                       <Tooltip title="Market Cap">
-                        <Button variant="contained" className="px-3 bg-pink-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-pink-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           MarketCap : {osData?.stats?.market_cap?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Average Price">
-                        <Button variant="contained" className="px-3 bg-green-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-green-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           Average : {osData?.stats?.average_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                       <Tooltip title="Floor Price">
-                        <Button variant="contained" className="px-3 bg-blue-400" size="small" aria-label="add">
+                        <Button
+                          variant="contained"
+                          className="px-3 bg-blue-400"
+                          size="small"
+                          aria-label="add"
+                        >
                           Floor : {osData?.stats?.floor_price?.toFixed(3)}
                         </Button>
                       </Tooltip>
                     </div>
                   </div>
                   <Typography className="m-2 p-5 h-32 overflow-y-scroll">
-                    {osData?.description ? osData.description : "description not found."}
+                    {osData?.description ? osData.description : "Greeting from Tokyo. We are a group of artists and developers who are passionate about NFTs. We are currently working on a new project called 'NFTs for the People' and we are looking for talented artists to join us. If you are interested, please contact us at"}
                   </Typography>
                 </Grid>
                 <Grid item xs={5} className="mt-2 relative">
@@ -501,7 +569,13 @@ const ItemPage: React.FC = () => {
                     height: "60vh",
                   }}
                 >
-                  <Grid container item alignItems="top" spacing={4} padding={10}>
+                  <Grid
+                    container
+                    item
+                    alignItems="top"
+                    spacing={4}
+                    padding={10}
+                  >
                     {items.map((item) => (
                       <Grid key={item.id} item xs={3}>
                         <div className="bg-gray-100 p-2 rounded-lg border border-gray-300 w-56 flex flex-col items-center justify-center">
@@ -515,8 +589,12 @@ const ItemPage: React.FC = () => {
                             }}
                             className="w-[12vh] aspect-square mb-4"
                           />
-                          <Typography className="font-medium text-lg">{item.name}</Typography>
-                          <Typography className="font-medium text-lg mt-2">{item.price.toFixed(2)} wETH</Typography>
+                          <Typography className="font-medium text-lg">
+                            {item.name}
+                          </Typography>
+                          <Typography className="font-medium text-lg mt-2">
+                            {item.price.toFixed(2)} wETH
+                          </Typography>
                           <Grid item>
                             <Button
                               variant="contained"
@@ -592,13 +670,29 @@ const ItemPage: React.FC = () => {
                           }}
                         >
                           <Grid container direction="row" alignItems="center">
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Typography variant="h5" className="font-medium mb-1">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
+                              <Typography
+                                variant="h5"
+                                className="font-medium mb-1"
+                              >
                                 {selectedItem.name}
                               </Typography>
                             </Grid>
-                            <Grid item xs={6} marginBottom={2} className="flex justify-center">
-                              <Typography variant="h5" className="font-medium mb-1">
+                            <Grid
+                              item
+                              xs={6}
+                              marginBottom={2}
+                              className="flex justify-center"
+                            >
+                              <Typography
+                                variant="h5"
+                                className="font-medium mb-1"
+                              >
                                 {selectedItem.price.toFixed(2)} wETH
                               </Typography>
                             </Grid>
@@ -631,7 +725,12 @@ const ItemPage: React.FC = () => {
                             }}
                           >
                             <Grid container direction="row" alignItems="center">
-                              <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                              <Grid
+                                item
+                                xs={6}
+                                marginBottom={2}
+                                className="flex justify-center"
+                              >
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -647,7 +746,12 @@ const ItemPage: React.FC = () => {
                                   Approved on Mumbai
                                 </Button>
                               </Grid>
-                              <Grid item xs={6} marginBottom={2} className="flex justify-center">
+                              <Grid
+                                item
+                                xs={6}
+                                marginBottom={2}
+                                className="flex justify-center"
+                              >
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -668,12 +772,26 @@ const ItemPage: React.FC = () => {
                                   variant="outlined"
                                   size="medium"
                                   style={{ marginRight: "8px" }}
-                                  onChange={() => {}}
+                                  onChange={(e: any) => {
+                                    const val = e.target.value;
+                                    if (val === '' || (val[val.length - 1] === '.' && !isNaN(parseFloat(val.slice(0, -1))))) {
+                                      setSliderValue1(val); // Allow empty input or input ending with a period
+                                    } else {
+                                      const numVal = parseFloat(val);
+                                      if (!isNaN(numVal)) {
+                                        setSliderValue1(numVal);
+                                      }
+                                      // Ignore non-numeric inputs
+                                    }
+                                  }}
                                   value={sliderValue1}
                                 />{" "}
                               </Grid>
                               <Grid item xs={4} className="flex justify-center">
-                                <Typography variant="h5" className="font-medium mb-1">
+                                <Typography
+                                  variant="h5"
+                                  className="font-medium mb-1"
+                                >
                                   wETH from Mumbai
                                 </Typography>
                               </Grid>
@@ -682,16 +800,34 @@ const ItemPage: React.FC = () => {
                                   variant="outlined"
                                   size="medium"
                                   style={{ marginRight: "8px" }}
-                                  onChange={() => {}}
+                                  onChange={(e: any) => {
+                                    const val = e.target.value;
+                                    if (val === '' || (val[val.length - 1] === '.' && !isNaN(parseFloat(val.slice(0, -1))))) {
+                                      setSliderValue2(val); // Allow empty input or input ending with a period
+                                    } else {
+                                      const numVal = parseFloat(val);
+                                      if (!isNaN(numVal)) {
+                                        setSliderValue2(numVal);
+                                      }
+                                      // Ignore non-numeric inputs
+                                    }
+                                  }}
                                   value={sliderValue2}
                                 />{" "}
                               </Grid>
                               <Grid item xs={4} className="flex justify-center">
-                                <Typography variant="h5" className="font-medium mb-1">
+                                <Typography
+                                  variant="h5"
+                                  className="font-medium mb-1"
+                                >
                                   wETH from Linea
                                 </Typography>
                               </Grid>
-                              <Grid item xs={12} className="flex justify-center">
+                              <Grid
+                                item
+                                xs={12}
+                                className="flex justify-center"
+                              >
                                 <Button
                                   variant="contained"
                                   color="primary"
@@ -714,11 +850,21 @@ const ItemPage: React.FC = () => {
                     )}
                     <div>
                       <div className="absolute flex rounded-lg outline-none justify-between p-10 mt-20 bg-white w-[800px]">
-                        <Stepper activeStep={buyTxStatus} alternativeLabel className="w-full">
+                        <Stepper
+                          activeStep={buyTxStatus}
+                          alternativeLabel
+                          className="w-full"
+                        >
                           {steps.map((label: Steps, idx: number) => (
                             <Step className="" key={label.id}>
-                              <StepLabel className={`text-lg ${buyTxStatus == label.id ? "animate-pulse" : null}`}>
-                                <span>{label.title}</span>
+                              <StepLabel
+                                className={`text-lg ${
+                                  buyTxStatus == label.id
+                                    ? "animate-pulse"
+                                    : null
+                                }`}
+                              >
+                                <span className="text-xl">{label.title}</span>
                               </StepLabel>
                               {/* <Button
                                 className={`${
@@ -746,7 +892,10 @@ const ItemPage: React.FC = () => {
                   onClose={handleNetworkChangeModalClose}
                 />
                 <Backdrop
-                  sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 100 }}
+                  sx={{
+                    color: "#fff",
+                    zIndex: (theme) => theme.zIndex.drawer + 100,
+                  }}
                   open={open}
                   onClick={handleClose}
                 >

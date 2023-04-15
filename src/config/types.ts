@@ -88,6 +88,42 @@ export interface TokenBalance {
   }[];
 }
 
+export function defaultTokenBalance(): TokenBalance {
+  return {
+    amount: "",
+    tokenType: "",
+    token: {
+      name: "",
+      contractMetaData: {
+        image: "",
+        name: "",
+      },
+      tokenNfts: [],
+    },
+    tokenNfts: [],
+  };
+}
+
+export function createEmptyTokenNft(): any {
+  return {
+    tokenId: "",
+    metaData: {
+      name: "",
+      description: "",
+      image: "",
+    },
+    contentValue: {
+      image: {
+        medium: "",
+        extraSmall: "",
+        large: "",
+        original: "",
+        small: "",
+      },
+    },
+  };
+}
+
 export interface openseaData {
   banner_image_url: string | null;
   chat_url: string | null;
